@@ -389,6 +389,7 @@ export function TransactionsPage() {
                     if (!open) setTimeout(() => setEditingTransaction(undefined), 300);
                 }} 
                 transaction={editingTransaction}
+                defaultDate={format(selectedDate, 'yyyy-MM-dd')}
                 accounts={accounts} 
                 categories={categories} 
                 onSuccess={handleSubmit} 

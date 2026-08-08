@@ -38,6 +38,7 @@ interface TransactionFormDialogProps {
   onOpenChange: (open: boolean) => void
   transaction?: Transaction & { tags?: Array<{ id: string; name: string }> }
   defaultType?: 'inflow' | 'outflow' | 'transfer'
+  defaultDate?: string
   onSuccess?: (data?: TransactionFormData) => void
   accounts?: Array<{ id: string; name: string; type: string }>
   categories?: Array<{ id: string; name: string; icon?: string; type: 'inflow' | 'outflow' }>
@@ -48,11 +49,13 @@ export function TransactionFormDialog({
   onOpenChange,
   transaction,
   defaultType = 'outflow',
+  defaultDate,
   onSuccess,
   accounts = [],
   categories = [],
 }: TransactionFormDialogProps) {
   const isEdit = !!transaction
+  const initialDate = defaultDate || format(new Date(), 'yyyy-MM-dd')
 
   const { register, handleSubmit, reset, setValue, watch, control, formState: { errors } } = useForm<TransactionFormData>({
     resolver: zodResolver(transactionSchema),
@@ -62,7 +65,7 @@ export function TransactionFormDialog({
       to_account_id: '',
       category_id: '',
       amount: 0,
-      date: format(new Date(), 'yyyy-MM-dd'),
+      date: initialDate,
       notes: '',
       tag_ids: [],
     },
@@ -85,7 +88,7 @@ export function TransactionFormDialog({
       reset({
         type: defaultType,
         amount: 0,
-        date: format(new Date(), 'yyyy-MM-dd'),
+        date: defaultDate || format(new Date(), 'yyyy-MM-dd'),
         account_id: '',
         to_account_id: '',
         category_id: '',
@@ -93,7 +96,7 @@ export function TransactionFormDialog({
         tag_ids: [],
       })
     }
-  }, [open, transaction, reset, defaultType])
+  }, [open, transaction, reset, defaultType, defaultDate])
 
   const type = watch('type')
   const accountId = watch('account_id')

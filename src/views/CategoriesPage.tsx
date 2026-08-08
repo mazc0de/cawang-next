@@ -30,6 +30,7 @@ export function CategoriesPage() {
 
   const [showForm, setShowForm] = useState(false)
   const [editCategory, setEditCategory] = useState<Category | null>(null)
+  const [activeTab, setActiveTab] = useState<'inflow' | 'outflow'>('outflow')
   
   const [formName, setFormName] = useState('')
   const [formIcon, setFormIcon] = useState('ShoppingBag')
@@ -144,12 +145,12 @@ export function CategoriesPage() {
             <h2 className="text-2xl font-bold">Kategori Transaksi</h2>
             <p className="text-sm text-slate-500 mt-1">Kelola kategori untuk pemasukan dan pengeluaran Anda.</p>
           </div>
-          <Button onClick={() => handleOpenAdd('outflow')} className="gap-2 bg-[#8ab4f8] hover:bg-[#739ce3] text-white rounded-full px-5 shadow-none h-9">
+          <Button onClick={() => handleOpenAdd(activeTab)} className="gap-2 bg-[#8ab4f8] hover:bg-[#739ce3] text-white rounded-full px-5 shadow-none h-9">
             <Plus className="h-4 w-4" /> Tambah Kategori
           </Button>
         </div>
 
-        <Tabs defaultValue="outflow" className="w-full">
+        <Tabs value={activeTab} onValueChange={(val) => setActiveTab(val as 'inflow' | 'outflow')} className="w-full">
           <TabsList className="mb-4">
             <TabsTrigger value="outflow" className="px-6">Pengeluaran ({outflowCategories.length})</TabsTrigger>
             <TabsTrigger value="inflow" className="px-6">Pemasukan ({inflowCategories.length})</TabsTrigger>
@@ -168,10 +169,32 @@ export function CategoriesPage() {
           <DialogHeader>
             <DialogTitle>{editCategory ? 'Edit Kategori' : 'Tambah Kategori'}</DialogTitle>
             <DialogDescription>
-              Tentukan nama dan ikon untuk kategori {formType === 'inflow' ? 'Pemasukan' : 'Pengeluaran'}.
+              Tentukan tipe, nama, dan ikon untuk kategori.
             </DialogDescription>
           </DialogHeader>
           <div className="space-y-4 py-2">
+            <div className="space-y-1.5">
+              <Label>Tipe Kategori</Label>
+              <div className="grid grid-cols-2 gap-2">
+                <Button
+                  type="button"
+                  variant={formType === 'outflow' ? 'default' : 'outline'}
+                  className={formType === 'outflow' ? 'bg-[#e65c5c] text-white hover:bg-[#d44c4c]' : ''}
+                  onClick={() => setFormType('outflow')}
+                >
+                  Pengeluaran
+                </Button>
+                <Button
+                  type="button"
+                  variant={formType === 'inflow' ? 'default' : 'outline'}
+                  className={formType === 'inflow' ? 'bg-[#4cb791] text-white hover:bg-[#3da37e]' : ''}
+                  onClick={() => setFormType('inflow')}
+                >
+                  Pemasukan
+                </Button>
+              </div>
+            </div>
+
             <div className="space-y-2">
               <Label>Ikon Kategori</Label>
               <div className="grid grid-cols-6 gap-2 max-h-48 overflow-y-auto p-1 border rounded-md">
