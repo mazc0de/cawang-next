@@ -1,6 +1,7 @@
 'use client';
 import { useState } from 'react';
 import Link from 'next/link';
+import { format } from 'date-fns';
 
 import { TrendingUp, TrendingDown, Wallet, AlertCircle, Plus, ArrowLeftRight, ArrowDown, ArrowUp } from 'lucide-react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -8,16 +9,16 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Progress } from '@/components/ui/progress';
 import { Skeleton } from '@/components/ui/skeleton';
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import { formatRupiah, formatDateShort, getCurrentFinancialCycle, cn } from '@/lib/utils';
 import { useAuth } from '@/contexts/AuthContext';
 import { useFinancialCycleConfig } from '@/hooks/useFinancialCycleConfig';
 import { useDashboardStats } from '@/hooks/useDashboardStats';
 import { useAccounts } from '@/hooks/useAccounts';
 import { useBudgets } from '@/hooks/useBudgets';
-import { useTransactions } from '@/hooks/useTransactions';
+import { useTransactions, useCreateTransaction, useUpdateTransaction, useDeleteTransaction } from '@/hooks/useTransactions';
 import { TransactionFormDialog } from '@/components/transactions/TransactionFormDialog';
 import type { TransactionFormData } from '@/components/transactions/TransactionFormDialog';
-import { useCreateTransaction } from '@/hooks/useTransactions';
 import { useCategories } from '@/hooks/useCategories';
 import { supabase } from '@/lib/supabase';
 import { useQueryClient } from '@tanstack/react-query';
@@ -27,6 +28,9 @@ export function DashboardPage() {
     const queryClient = useQueryClient();
     const firstName = user?.user_metadata?.full_name?.split(' ')[0] ?? 'Pengguna';
     const [showForm, setShowForm] = useState(false);
+    const [editingTransaction, setEditingTransaction] = useState<any>(undefined);
+
+    const todayStr = format(new Date(), 'yyyy-MM-dd');
 
     // Financial cycle config
     const { data: cycleConfig } = useFinancialCycleConfig();
@@ -36,9 +40,12 @@ export function DashboardPage() {
     // Real data
     const { data: stats, isLoading: statsLoading } = useDashboardStats(cycleStart, cycleEnd);
     const { data: accounts = [], isLoading: accountsLoading } = useAccounts();
-    const { data: transactions = [], isLoading: txLoading } = useTransactions({ start_date: cycleStart.toISOString().split('T')[0], end_date: cycleEnd.toISOString().split('T')[0] });
+    const { data: todayTransactions = [], isLoading: todayTxLoading } = useTransactions({ start_date: todayStr, end_date: todayStr });
     const { data: categories = [] } = useCategories();
+
     const createTransaction = useCreateTransaction();
+    const updateTransaction = useUpdateTransaction();
+    const deleteTransaction = useDeleteTransaction();
 
     // Budgets for current cycle
     const cycleYear = cycleStart.getFullYear();
@@ -46,10 +53,37 @@ export function DashboardPage() {
     const { data: budgets = [] } = useBudgets(cycleYear, cycleMonth);
 
     const cashFlow = (stats?.income_this_cycle ?? 0) - (stats?.expense_this_cycle ?? 0);
-    const recentTransactions = transactions.slice(0, 5);
 
     const handleTransactionSubmit = async (data?: TransactionFormData) => {
         if (!data || !user) return;
+
+        if (editingTransaction) {
+            if (editingTransaction.transfer_pair_id) {
+                await updateTransaction.mutateAsync({
+                    id: editingTransaction.id,
+                    amount: data.amount,
+                    date: data.date,
+                    notes: data.notes,
+                });
+                await updateTransaction.mutateAsync({
+                    id: editingTransaction.transfer_pair_id,
+                    amount: data.amount,
+                    date: data.date,
+                });
+            } else {
+                await updateTransaction.mutateAsync({
+                    id: editingTransaction.id,
+                    account_id: data.account_id,
+                    category_id: data.category_id!,
+                    amount: data.amount,
+                    date: data.date,
+                    notes: data.notes,
+                });
+            }
+            setEditingTransaction(undefined);
+            return;
+        }
+
         if (data.type === 'transfer') {
             const { data: tx1 } = await supabase
                 .from('transactions')
@@ -86,9 +120,9 @@ export function DashboardPage() {
                 .select()
                 .single();
             if (tx2) await supabase.from('transactions').update({ transfer_pair_id: tx2.id }).eq('id', tx1.id);
-            queryClient.invalidateQueries({ queryKey: ['transactions'] });
-            queryClient.invalidateQueries({ queryKey: ['accounts'] });
-            queryClient.invalidateQueries({ queryKey: ['dashboard_stats'] });
+            queryClient.invalidateQueries({ queryKey: ['transactions', user.id] });
+            queryClient.invalidateQueries({ queryKey: ['accounts', user.id] });
+            queryClient.invalidateQueries({ queryKey: ['dashboard_stats', user.id] });
         } else {
             await createTransaction.mutateAsync({
                 account_id: data.account_id,
@@ -103,7 +137,12 @@ export function DashboardPage() {
         }
     };
 
-    // Komponen StatCard (Ditambahkan p-0 pada Card dan m-0 pada CardHeader)
+    const handleDeleteTransaction = async (id: string) => {
+        if (!confirm('Hapus transaksi ini?')) return;
+        await deleteTransaction.mutateAsync(id);
+    };
+
+    // Komponen StatCard
     const StatCard = ({ id, icon, label, value, sub, theme }: { id: string; icon: React.ReactNode; label: string; value: string; sub?: string; theme: 'blue' | 'emerald' | 'orange' | 'rose' }) => {
         const themeStyles = {
             blue: { border: 'border-[#a7c5f9]', header: 'bg-[#eef4ff]', icon: 'text-[#5a8df2]' },
@@ -151,7 +190,15 @@ export function DashboardPage() {
                                 </Badge>
                             </Link>
                         )}
-                        <Button size="sm" id="btn-add-transaction" className="gap-1.5 h-9 bg-[#8ab4f8] hover:bg-[#739ce3] text-white rounded-full px-5 shadow-none" onClick={() => setShowForm(true)}>
+                        <Button
+                            size="sm"
+                            id="btn-add-transaction"
+                            className="gap-1.5 h-9 bg-[#8ab4f8] hover:bg-[#739ce3] text-white rounded-full px-5 shadow-none"
+                            onClick={() => {
+                                setEditingTransaction(undefined);
+                                setShowForm(true);
+                            }}
+                        >
                             <Plus className="h-4 w-4" />
                             Catat Transaksi
                         </Button>
@@ -167,7 +214,7 @@ export function DashboardPage() {
                 </div>
 
                 <div className="grid gap-6 lg:grid-cols-2">
-                    {/* Main Card 1: Account (Ditambahkan p-0 dan m-0) */}
+                    {/* Main Card 1: Account */}
                     <Card id="card-accounts" className="p-0 shadow-sm rounded-2xl bg-white border border-[#a7c5f9] overflow-hidden">
                         <CardHeader className="m-0 border-b-0 pb-3 pt-4 px-6 bg-[#eef4ff]">
                             <div className="flex items-center justify-between">
@@ -205,7 +252,7 @@ export function DashboardPage() {
                         </CardContent>
                     </Card>
 
-                    {/* Main Card 2: Budget (Ditambahkan p-0 dan m-0) */}
+                    {/* Main Card 2: Budget */}
                     <Card id="card-budget" className="p-0 shadow-sm rounded-2xl bg-white border border-[#a8e6cf] overflow-hidden">
                         <CardHeader className="m-0 border-b-0 pb-3 pt-4 px-6 bg-[#f0fbf7]">
                             <div className="flex items-center justify-between">
@@ -267,40 +314,61 @@ export function DashboardPage() {
                     </Card>
                 </div>
 
-                {/* Main Card 3: Recent Transactions (Ditambahkan p-0 dan m-0) */}
+                {/* Main Card 3: Transactions Today */}
                 <Card id="card-recent-transactions" className="p-0 shadow-sm rounded-2xl bg-white border border-[#e2e8f0] overflow-hidden">
                     <CardHeader className="m-0 border-b-0 pb-3 pt-4 px-6 bg-[#f8fafc]">
                         <div className="flex items-center justify-between">
-                            <CardTitle className="text-base font-bold text-slate-800">Recent Transactions</CardTitle>
-                            <Button variant="ghost" size="sm" className="h-8 text-xs rounded-full px-4 text-slate-600 hover:bg-slate-200" id="btn-view-all-transactions" asChild>
-                                <Link href="/dashboard/transactions">Lihat Semua</Link>
-                            </Button>
+                            <CardTitle className="text-base font-bold text-slate-800">Transactions Today</CardTitle>
+                            <div className="flex items-center gap-2">
+                                <Button
+                                    size="sm"
+                                    variant="outline"
+                                    className="h-8 text-xs rounded-full px-3 gap-1 border-slate-200 text-slate-700 hover:bg-slate-100"
+                                    onClick={() => {
+                                        setEditingTransaction(undefined);
+                                        setShowForm(true);
+                                    }}
+                                >
+                                    <Plus className="h-3.5 w-3.5" /> Catat
+                                </Button>
+                                <Button variant="ghost" size="sm" className="h-8 text-xs rounded-full px-4 text-slate-600 hover:bg-slate-200" id="btn-view-all-transactions" asChild>
+                                    <Link href="/dashboard/transactions">Lihat Semua</Link>
+                                </Button>
+                            </div>
                         </div>
                     </CardHeader>
                     <CardContent className="px-6 pb-6 pt-5">
-                        {txLoading && (
+                        {todayTxLoading && (
                             <div className="space-y-2">
                                 {[1, 2, 3].map((i) => (
                                     <Skeleton key={i} className="h-12 w-full bg-slate-100" />
                                 ))}
                             </div>
                         )}
-                        {!txLoading && recentTransactions.length === 0 && (
+                        {!todayTxLoading && todayTransactions.length === 0 && (
                             <div className="text-center py-6">
-                                <p className="text-sm text-slate-500">Belum ada transaksi</p>
-                                <Button variant="link" size="sm" className="h-7 text-xs mt-1 text-slate-600" onClick={() => setShowForm(true)}>
-                                    Catat transaksi pertama →
+                                <p className="text-sm text-slate-500">Belum ada transaksi hari ini</p>
+                                <Button
+                                    variant="link"
+                                    size="sm"
+                                    className="h-7 text-xs mt-1 text-slate-600"
+                                    onClick={() => {
+                                        setEditingTransaction(undefined);
+                                        setShowForm(true);
+                                    }}
+                                >
+                                    Catat transaksi pertama hari ini →
                                 </Button>
                             </div>
                         )}
-                        {!txLoading && recentTransactions.length > 0 && (
+                        {!todayTxLoading && todayTransactions.length > 0 && (
                             <div className="space-y-0">
-                                {recentTransactions.map((tx, i) => {
+                                {todayTransactions.map((tx, i) => {
                                     const isTransfer = !!tx.transfer_pair_id;
                                     const acc = (tx as any).account;
                                     const cat = (tx as any).category;
                                     return (
-                                        <div key={tx.id} className={cn('flex items-center gap-4 py-3', i !== recentTransactions.length - 1 && 'border-b border-slate-100')}>
+                                        <div key={tx.id} className={cn('flex items-center gap-4 py-3 group', i !== todayTransactions.length - 1 && 'border-b border-slate-100')}>
                                             <div
                                                 className={cn(
                                                     'h-8 w-8 rounded-full flex items-center justify-center shrink-0',
@@ -309,16 +377,43 @@ export function DashboardPage() {
                                             >
                                                 {isTransfer ? <ArrowLeftRight className="h-4 w-4" /> : tx.type === 'inflow' ? <ArrowUp className="h-4 w-4" /> : <ArrowDown className="h-4 w-4" />}
                                             </div>
-                                            <div className="flex-1 min-w-0 flex items-center">
+                                            <div className="flex-1 min-w-0 flex items-center gap-2">
                                                 <p className="text-sm font-medium w-1/3 truncate text-slate-800">{tx.notes || cat?.name || '—'}</p>
-                                                <p className="text-xs text-slate-500 flex-1 hidden sm:block">
-                                                    {cat?.name} • {acc?.name} • {formatDateShort(tx.date)}
+                                                <p className="text-xs text-slate-500 flex-1 hidden sm:block truncate">
+                                                    {cat?.name ? `${cat.name} • ` : ''}
+                                                    {acc?.name}
                                                 </p>
                                             </div>
-                                            <p className={cn('text-sm font-semibold tabular-nums', isTransfer ? 'text-[#5a8df2]' : tx.type === 'inflow' ? 'text-[#4cb791]' : 'text-slate-800')}>
+                                            <p className={cn('text-sm font-semibold tabular-nums shrink-0', isTransfer ? 'text-[#5a8df2]' : tx.type === 'inflow' ? 'text-[#4cb791]' : 'text-slate-800')}>
                                                 {tx.type === 'inflow' ? '+' : '-'}
                                                 {formatRupiah(tx.amount, true)}
                                             </p>
+                                            <DropdownMenu>
+                                                <DropdownMenuTrigger asChild>
+                                                    <Button variant="ghost" size="icon" className="h-8 w-8 rounded-full opacity-0 group-hover:opacity-100 transition-opacity shrink-0 text-slate-400 hover:text-slate-700 hover:bg-slate-200">
+                                                        <span className="sr-only">Menu</span>
+                                                        <svg className="h-4 w-4" fill="currentColor" viewBox="0 0 16 16">
+                                                            <circle cx="8" cy="3" r="1.5" />
+                                                            <circle cx="8" cy="8" r="1.5" />
+                                                            <circle cx="8" cy="13" r="1.5" />
+                                                        </svg>
+                                                    </Button>
+                                                </DropdownMenuTrigger>
+                                                <DropdownMenuContent align="end" className="rounded-xl">
+                                                    <DropdownMenuItem
+                                                        className="cursor-pointer rounded-lg"
+                                                        onClick={() => {
+                                                            setEditingTransaction(tx);
+                                                            setShowForm(true);
+                                                        }}
+                                                    >
+                                                        Edit
+                                                    </DropdownMenuItem>
+                                                    <DropdownMenuItem className="text-red-500 focus:text-red-600 focus:bg-red-50 cursor-pointer rounded-lg" onClick={() => handleDeleteTransaction(tx.id)}>
+                                                        Hapus
+                                                    </DropdownMenuItem>
+                                                </DropdownMenuContent>
+                                            </DropdownMenu>
                                         </div>
                                     );
                                 })}
@@ -328,7 +423,18 @@ export function DashboardPage() {
                 </Card>
             </main>
 
-            <TransactionFormDialog open={showForm} onOpenChange={setShowForm} accounts={accounts} categories={categories} onSuccess={handleTransactionSubmit} />
+            <TransactionFormDialog
+                open={showForm}
+                onOpenChange={(open) => {
+                    setShowForm(open);
+                    if (!open) setTimeout(() => setEditingTransaction(undefined), 300);
+                }}
+                transaction={editingTransaction}
+                defaultDate={todayStr}
+                accounts={accounts}
+                categories={categories}
+                onSuccess={handleTransactionSubmit}
+            />
         </div>
     );
 }
