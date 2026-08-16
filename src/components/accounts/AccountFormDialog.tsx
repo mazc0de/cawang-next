@@ -134,11 +134,22 @@ export function AccountFormDialog({ open, onOpenChange, account, onSuccess }: Ac
             )}
           </FieldWrapper>
 
-          <DialogFooter className="pt-2">
-            <Button id="btn-cancel-account" type="button" variant="outline" onClick={() => onOpenChange(false)}>
+          <DialogFooter className="pt-4 flex flex-row items-center justify-end gap-3">
+            <button
+              id="btn-cancel-account"
+              type="button"
+              className="btn-neubrutalism bg-white text-ink px-5 py-2 text-xs font-space-grotesk"
+              onClick={() => onOpenChange(false)}
+            >
               Batal
-            </Button>
-            <Button id="btn-submit-account" type="submit">Simpan</Button>
+            </button>
+            <button
+              id="btn-submit-account"
+              type="submit"
+              className="btn-neubrutalism bg-hot-pink text-white px-5 py-2 text-xs font-space-grotesk"
+            >
+              Simpan
+            </button>
           </DialogFooter>
         </form>
       </DialogContent>

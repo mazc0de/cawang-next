@@ -240,11 +240,13 @@ export function TransactionFormDialog({
             <Input id="input-notes" placeholder="Keterangan singkat" {...register('notes')} />
           </FieldWrapper>
 
-          <div className="pt-2 flex justify-end gap-2">
-            <Button type="button" variant="outline" id="btn-cancel" onClick={() => onOpenChange(false)}>
+          <div className="pt-4 flex justify-end gap-3">
+            <button type="button" className="btn-neubrutalism bg-white px-5 py-2 text-sm font-space-grotesk text-ink" id="btn-cancel" onClick={() => onOpenChange(false)}>
               Batal
-            </Button>
-            <Button type="submit" id="btn-submit">Simpan</Button>
+            </button>
+            <button type="submit" className="btn-neubrutalism bg-hot-pink px-5 py-2 text-sm font-space-grotesk text-ink" id="btn-submit">
+              Simpan
+            </button>
           </div>
         </form>
       </DialogContent>

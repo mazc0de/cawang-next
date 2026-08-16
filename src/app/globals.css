@@ -2,127 +2,16 @@
 @import "./shadcn.css";
 @source "../";
 @import "tw-animate-css";
-@import "@fontsource-variable/geist";
-
-@custom-variant dark (&:is(.dark *));
-
-:root {
-  /* Pastel Light Theme */
-  --background: oklch(0.98 0.01 290);
-  --foreground: oklch(0.2 0.02 290);
-  
-  /* Cards & Popovers - using slight translucency for modern glass feel where supported, otherwise fallback */
-  --card: oklch(1 0 0);
-  --card-foreground: oklch(0.2 0.02 290);
-  --popover: oklch(1 0 0);
-  --popover-foreground: oklch(0.2 0.02 290);
-  
-  /* Pastel Primary (Soft Purple) */
-  --primary: oklch(0.85 0.08 280);
-  --primary-foreground: oklch(0.3 0.05 280);
-  
-  /* Pastel Secondary (Soft Blue) */
-  --secondary: oklch(0.92 0.04 220);
-  --secondary-foreground: oklch(0.3 0.05 220);
-  
-  /* Muted */
-  --muted: oklch(0.95 0.02 280);
-  --muted-foreground: oklch(0.5 0.02 280);
-  
-  /* Pastel Accent (Soft Pink) */
-  --accent: oklch(0.92 0.06 330);
-  --accent-foreground: oklch(0.3 0.05 330);
-  
-  /* Pastel Destructive (Soft Red) */
-  --destructive: oklch(0.85 0.08 20);
-  --destructive-foreground: oklch(0.3 0.05 20);
-  
-  /* Borders and Inputs */
-  --border: oklch(0.9 0.02 280);
-  --input: oklch(0.9 0.02 280);
-  --ring: oklch(0.85 0.08 280);
-  
-  /* Softer, rounder corners */
-  --radius: 1rem;
-  
-  /* Sidebar */
-  --sidebar: oklch(0.98 0.01 290);
-  --sidebar-foreground: oklch(0.2 0.02 290);
-  --sidebar-primary: oklch(0.85 0.08 280);
-  --sidebar-primary-foreground: oklch(0.3 0.05 280);
-  --sidebar-accent: oklch(0.95 0.02 280);
-  --sidebar-accent-foreground: oklch(0.3 0.05 280);
-  --sidebar-border: oklch(0.9 0.02 280);
-  --sidebar-ring: oklch(0.85 0.08 280);
-
-  /* CAWANG custom tokens */
-  /* Pastel Green for Income */
-  --income: oklch(0.88 0.1 150);
-  --expense: oklch(0.85 0.08 20);
-  --income-foreground: oklch(0.25 0.05 150);
-  --expense-foreground: oklch(0.3 0.05 20);
-  
-  /* Pastel Chart Colors */
-  --chart-1: oklch(0.85 0.08 280); /* Purple */
-  --chart-2: oklch(0.92 0.04 220); /* Blue */
-  --chart-3: oklch(0.92 0.06 330); /* Pink */
-  --chart-4: oklch(0.88 0.1 150);  /* Green */
-  --chart-5: oklch(0.9 0.08 70);   /* Yellow */
-}
-
-.dark {
-  /* Pastel Dark Theme */
-  --background: oklch(0.18 0.02 280);
-  --foreground: oklch(0.95 0.02 280);
-  
-  --card: oklch(0.22 0.02 280);
-  --card-foreground: oklch(0.95 0.02 280);
-  
-  --popover: oklch(0.22 0.02 280);
-  --popover-foreground: oklch(0.95 0.02 280);
-  
-  --primary: oklch(0.75 0.08 280);
-  --primary-foreground: oklch(0.2 0.05 280);
-  
-  --secondary: oklch(0.7 0.06 220);
-  --secondary-foreground: oklch(0.15 0.05 220);
-  
-  --muted: oklch(0.28 0.02 280);
-  --muted-foreground: oklch(0.7 0.02 280);
-  
-  --accent: oklch(0.7 0.1 330);
-  --accent-foreground: oklch(0.2 0.05 330);
-  
-  --destructive: oklch(0.7 0.1 20);
-  --destructive-foreground: oklch(0.2 0.05 20);
-  
-  --border: oklch(0.3 0.02 280);
-  --input: oklch(0.3 0.02 280);
-  --ring: oklch(0.75 0.08 280);
-  
-  --sidebar: oklch(0.18 0.02 280);
-  --sidebar-foreground: oklch(0.95 0.02 280);
-  --sidebar-primary: oklch(0.75 0.08 280);
-  --sidebar-primary-foreground: oklch(0.2 0.05 280);
-  --sidebar-accent: oklch(0.28 0.02 280);
-  --sidebar-accent-foreground: oklch(0.95 0.02 280);
-  --sidebar-border: oklch(0.3 0.02 280);
-  --sidebar-ring: oklch(0.75 0.08 280);
-
-  /* CAWANG custom tokens dark */
-  --income: oklch(0.75 0.1 150);
-  --expense: oklch(0.7 0.1 20);
-  --income-foreground: oklch(0.15 0.05 150);
-  --expense-foreground: oklch(0.15 0.05 20);
-  
-  --chart-1: oklch(0.75 0.08 280);
-  --chart-2: oklch(0.7 0.06 220);
-  --chart-3: oklch(0.7 0.1 330);
-  --chart-4: oklch(0.75 0.1 150);
-  --chart-5: oklch(0.8 0.08 70);
-}
 
 @theme {
+  --color-ink: #111111;
+  --color-canvas: #fdf9f0;
+  --color-hot-pink: #ff3d81;
+  --color-canary: #ffd23f;
+  --color-mint: #3ddc97;
+  --color-lilac: #c8a2ff;
+  --color-coral: #ff6b5e;
+
   --color-background: var(--background);
   --color-foreground: var(--foreground);
   --color-card: var(--card);
@@ -142,79 +31,156 @@
   --color-border: var(--border);
   --color-input: var(--input);
   --color-ring: var(--ring);
-  --color-sidebar: var(--sidebar);
-  --color-sidebar-foreground: var(--sidebar-foreground);
-  --color-sidebar-primary: var(--sidebar-primary);
-  --color-sidebar-primary-foreground: var(--sidebar-primary-foreground);
-  --color-sidebar-accent: var(--sidebar-accent);
-  --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
-  --color-sidebar-border: var(--sidebar-border);
-  --color-sidebar-ring: var(--sidebar-ring);
-  --color-income: var(--income);
-  --color-expense: var(--expense);
-  --color-income-foreground: var(--income-foreground);
-  --color-expense-foreground: var(--expense-foreground);
-  --radius-sm: calc(var(--radius) - 4px);
-  --radius-md: calc(var(--radius) - 2px);
-  --radius-lg: var(--radius);
-  --radius-xl: calc(var(--radius) + 4px);
-  --font-heading: var(--font-sans);
-  --font-sans: 'Geist Variable', sans-serif;
-  --color-chart-5: var(--chart-5);
-  --color-chart-4: var(--chart-4);
-  --color-chart-3: var(--chart-3);
-  --color-chart-2: var(--chart-2);
-  --color-chart-1: var(--chart-1);
-  --radius-2xl: calc(var(--radius) * 1.8);
-  --radius-3xl: calc(var(--radius) * 2.2);
-  --radius-4xl: calc(var(--radius) * 2.6);
+  --radius: var(--radius);
+
+  --shadow-hard-sm: 4px 4px 0px 0px #111111;
+  --shadow-hard-md: 6px 6px 0px 0px #111111;
+  --shadow-hard-lg: 9px 9px 0px 0px #111111;
 }
 
-* {
-  border-color: var(--border);
-  outline-color: var(--ring);
+@layer base {
+  :root {
+    --background: #fdf9f0;
+    --foreground: #111111;
+    --card: #ffffff;
+    --card-foreground: #111111;
+    --popover: #ffffff;
+    --popover-foreground: #111111;
+    --primary: #ff3d81;
+    --primary-foreground: #111111;
+    --secondary: #ffd23f;
+    --secondary-foreground: #111111;
+    --muted: #fdf9f0;
+    --muted-foreground: #111111;
+    --accent: #3ddc97;
+    --accent-foreground: #111111;
+    --destructive: #ff6b5e;
+    --destructive-foreground: #111111;
+    --border: #111111;
+    --input: #111111;
+    --ring: #111111;
+    --radius: 18px;
+  }
+
+  button,
+  [role="button"],
+  input[type="button"],
+  input[type="submit"],
+  input[type="reset"] {
+    cursor: pointer;
+  }
 }
 
 body {
   background-color: var(--background);
   color: var(--foreground);
-  font-family: 'Geist Variable', sans-serif;
-  /* Add subtle gradient background */
-  background-image: radial-gradient(at 0% 0%, oklch(0.95 0.03 260 / 40%) 0px, transparent 50%),
-                    radial-gradient(at 100% 100%, oklch(0.9 0.05 330 / 30%) 0px, transparent 50%);
-  background-attachment: fixed;
+  /* faint 24px grid */
+  background-image: linear-gradient(rgba(17, 17, 17, 0.05) 1px, transparent 1px),
+                    linear-gradient(90deg, rgba(17, 17, 17, 0.05) 1px, transparent 1px);
+  background-size: 24px 24px;
 }
 
-.dark body {
-  background-image: radial-gradient(at 0% 0%, oklch(0.25 0.04 260 / 40%) 0px, transparent 50%),
-                    radial-gradient(at 100% 100%, oklch(0.2 0.06 330 / 30%) 0px, transparent 50%);
-}
-
-@layer base {
-  * {
-    @apply border-border outline-ring/50;
-  }
-  body {
-    @apply bg-background text-foreground;
-  }
-  html {
-    @apply font-sans;
-  }
-}
-
-/* Glassmorphism Utilities */
 @layer utilities {
-  .glass {
-    @apply bg-background/60 backdrop-blur-xl border border-white/20 shadow-[0_4px_30px_rgba(0,0,0,0.05)];
+  .border-ink {
+    border: 2px solid #111111;
   }
-  .dark .glass {
-    @apply border-white/10 shadow-[0_4px_30px_rgba(0,0,0,0.2)];
+  .text-ink {
+    color: #111111;
   }
-  
-  .glass-card {
-    @apply bg-card/70 backdrop-blur-lg border border-white/30 shadow-sm transition-all duration-300 hover:shadow-md;
+  .bg-hot-pink {
+    background-color: #ff3d81;
   }
-  .dark .glass-card {
-    @apply border-white/10;
+  .bg-canary {
+    background-color: #ffd23f;
+  }
+  .bg-mint {
+    background-color: #3ddc97;
+  }
+  .bg-lilac {
+    background-color: #c8a2ff;
+  }
+  .bg-coral {
+    background-color: #ff6b5e;
+  }
+  .bg-canvas {
+    background-color: #fdf9f0;
+  }
+
+  /* Comic Button & Neubrutalism Buttons */
+  .btn-neubrutalism {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 700;
+    border: 2px solid #111111;
+    border-radius: 12px;
+    box-shadow: 4px 4px 0px #111111;
+    transition: all 0.3s ease;
+    cursor: pointer;
+    user-select: none;
+    text-decoration: none;
+  }
+
+  .btn-neubrutalism:hover {
+    background-color: #ffffff !important;
+    color: #ff3d81 !important;
+    border-color: #ff3d81 !important;
+    box-shadow: 4px 4px 0px #ff3d81 !important;
+  }
+
+  .btn-neubrutalism.bg-mint:hover {
+    background-color: #ffffff !important;
+    color: #3ddc97 !important;
+    border-color: #3ddc97 !important;
+    box-shadow: 4px 4px 0px #3ddc97 !important;
+  }
+
+  .btn-neubrutalism.bg-canary:hover {
+    background-color: #ffffff !important;
+    color: #111111 !important;
+    border-color: #ffd23f !important;
+    box-shadow: 4px 4px 0px #ffd23f !important;
+  }
+
+  .btn-neubrutalism:active {
+    background-color: #ffd23f !important;
+    color: #111111 !important;
+    border-color: #111111 !important;
+    box-shadow: none !important;
+    transform: translateY(4px) !important;
+  }
+
+  .comic-button {
+    display: inline-block;
+    padding: 10px 20px;
+    font-size: 16px;
+    font-weight: bold;
+    text-align: center;
+    text-decoration: none;
+    color: #fff;
+    background-color: #ff3d81;
+    border: 2px solid #000;
+    border-radius: 12px;
+    box-shadow: 5px 5px 0px #000;
+    transition: all 0.3s ease;
+    cursor: pointer;
+    user-select: none;
+  }
+
+  .comic-button:hover {
+    background-color: #fff;
+    color: #ff3d81;
+    border: 2px solid #ff3d81;
+    box-shadow: 5px 5px 0px #ff3d81;
+  }
+
+  .comic-button:active {
+    background-color: #ffd23f;
+    box-shadow: none;
+    transform: translateY(4px);
+  }
+
+  .card-neubrutalism {
+    @apply bg-white border-2 border-ink rounded-[18px] shadow-hard-md overflow-hidden;
   }
 }

@@ -2,154 +2,101 @@
 import { useState } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { 
-    LayoutDashboard, Wallet, ArrowLeftRight, CalendarDays, PieChart, 
-    Settings, TrendingUp, Folder, RefreshCw, ChevronRight
-} from 'lucide-react';
-import { Tooltip, TooltipTrigger, TooltipContent } from '@/components/ui/tooltip';
+import { LayoutDashboard, Wallet, ArrowLeftRight, CalendarDays, PieChart, Settings, TrendingUp, Folder, RefreshCw, ChevronRight, Zap, PiggyBank } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { useAuth } from '@/contexts/AuthContext';
 
 const mainNavItems = [
-    { href: '/dashboard', label: 'Dashboard', icon: LayoutDashboard, bg: 'bg-blue-100', color: 'text-blue-500' },
-    { href: '/dashboard/transactions', label: 'Transactions', icon: ArrowLeftRight, bg: 'bg-green-100', color: 'text-green-500' },
-    { href: '/dashboard/accounts', label: 'Accounts', icon: Wallet, bg: 'bg-amber-100', color: 'text-amber-500' },
-    { href: '/dashboard/budget', label: 'Budget', icon: PieChart, bg: 'bg-yellow-100', color: 'text-yellow-500' },
-    { href: '/dashboard/calendar', label: 'Calendar View', icon: CalendarDays, bg: 'bg-fuchsia-100', color: 'text-fuchsia-500' },
-    { href: '/dashboard/recurring', label: 'Recurring Rule', icon: RefreshCw, bg: 'bg-emerald-100', color: 'text-emerald-500' },
-    { href: '/dashboard/analytics', label: 'Analytics', icon: TrendingUp, bg: 'bg-rose-100', color: 'text-rose-500' },
-    { href: '/dashboard/categories', label: 'Categories', icon: Folder, bg: 'bg-orange-100', color: 'text-orange-500' },
+    { href: '/dashboard', label: 'Overview', icon: LayoutDashboard },
+    { href: '/dashboard/transactions', label: 'Transactions', icon: ArrowLeftRight },
+    { href: '/dashboard/analytics', label: 'Analytics', icon: TrendingUp },
+    { href: '/dashboard/accounts', label: 'Accounts', icon: Wallet },
+    { href: '/dashboard/budget', label: 'Budget', icon: PieChart },
+    { href: '/dashboard/calendar', label: 'Calendar', icon: CalendarDays },
+    { href: '/dashboard/recurring', label: 'Recurring', icon: RefreshCw },
+    { href: '/dashboard/categories', label: 'Categories', icon: Folder },
 ];
 
-const secondaryNavItems = [
-    { href: '/dashboard/settings', label: 'Settings', icon: Settings, bg: 'bg-blue-100', color: 'text-blue-500' }
-];
+const secondaryNavItems = [{ href: '/dashboard/settings', label: 'Settings', icon: Settings }];
 
 export function CustomSidebar() {
     const pathname = usePathname();
-    const [isExpanded, setIsExpanded] = useState<boolean>(true);
+    const { user } = useAuth();
+    const initials =
+        user?.user_metadata?.full_name
+            ?.split(' ')
+            .map((n: string) => n[0])
+            .join('')
+            .toUpperCase()
+            .slice(0, 2) || 'U';
 
     return (
-        <div
-            className={cn(
-                "relative flex h-full flex-col border-r border-slate-200 bg-[#eaf1ff] dark:border-slate-800 dark:bg-background transition-all duration-300 ease-in-out shrink-0",
-                isExpanded ? "w-64" : "w-20"
-            )}
-        >
-            {/* TOGGLE EXPAND BUTTON */}
-            <div className="relative flex h-16 w-full items-center px-4 pt-5 pb-4">
-                <button
-                    onClick={() => setIsExpanded(!isExpanded)}
-                    className={cn(
-                        "group absolute flex h-8 w-8 items-center justify-center rounded-full bg-white shadow-md border border-slate-200 transition-all duration-300 hover:bg-slate-50 focus:outline-none active:scale-95 z-10 dark:bg-slate-800 dark:border-slate-700 dark:hover:bg-slate-700",
-                        isExpanded ? "right-4" : "right-[50%] translate-x-[50%]"
-                    )}
-                >
-                    <ChevronRight
-                        size={18}
-                        className={cn(
-                            "text-slate-600 transition-transform duration-300 dark:text-slate-300 group-hover:text-slate-900 dark:group-hover:text-white",
-                            isExpanded ? "rotate-180" : "rotate-0"
-                        )}
-                    />
-                </button>
+        <div className="flex h-full w-[240px] flex-col border-r-2 border-ink bg-white shrink-0 z-20 overflow-hidden relative">
+            {/* Logo Lockup */}
+            <div className="flex items-center gap-3 px-5 py-6 border-b-2">
+                <div className="w-10 h-10 rounded-[12px] bg-hot-pink border-2 border-ink shadow-[2px_2px_0px_0px_#111111] flex items-center justify-center shrink-0">
+                    <PiggyBank className="text-ink h-5 w-5" />
+                </div>
+                <div className="flex flex-col min-w-0">
+                    <span className="font-archivo-black text-lg font-bold tracking-tight text-ink uppercase leading-none">CAWANG</span>
+                    <span className="font-space-grotesk text-[11px] font-bold text-ink/70 leading-tight mt-1 truncate">Catat Keuangan</span>
+                </div>
             </div>
 
-            {/* MAIN MENU ITEMS */}
-            <div className="flex flex-col gap-2 mt-2 flex-1 overflow-y-auto no-scrollbar">
+            {/* Navigation */}
+            <div className="flex-1 overflow-y-auto px-4 py-6 space-y-2">
                 {mainNavItems.map((item) => {
                     const isActive = item.href === '/dashboard' ? pathname === '/dashboard' : pathname.startsWith(item.href);
                     const Icon = item.icon;
 
                     return (
-                        <Tooltip key={item.href} delayDuration={0}>
-                            <TooltipTrigger asChild>
-                                <Link
-                                    href={item.href}
-                                    className={cn(
-                                        "mx-4 flex h-11 items-center overflow-hidden rounded-xl transition-all duration-300 shrink-0",
-                                        isActive
-                                            ? "bg-white text-slate-900 shadow-sm font-semibold dark:bg-slate-800 dark:text-white"
-                                            : "text-slate-600 hover:bg-white/50 hover:text-slate-900 active:scale-[0.98] dark:text-slate-400 dark:hover:bg-slate-800 dark:hover:text-slate-200"
-                                    )}
-                                >
-                                    <div className="flex h-11 w-12 shrink-0 items-center justify-center">
-                                        <div className={cn(`flex size-8 shrink-0 items-center justify-center rounded-lg ${item.bg} ${item.color}`)}>
-                                            <Icon className="size-4" />
-                                        </div>
-                                    </div>
+                        <Link
+                            key={item.href}
+                            href={item.href}
+                            className={cn(
+                                'flex items-center gap-3 h-12 px-4 rounded-xl border-2 border-transparent transition-all',
+                                isActive
+                                    ? 'bg-hot-pink border-ink shadow-hard-sm text-ink font-bold hover:translate-y-[1px] hover:translate-x-[1px] hover:shadow-[3px_3px_0px_0px_#111111]'
+                                    : 'text-ink hover:bg-canvas hover:border-ink hover:shadow-hard-sm font-medium',
+                            )}
+                        >
+                            <Icon className={cn('size-5', isActive ? 'fill-ink/20' : '')} strokeWidth={isActive ? 2.5 : 2} />
+                            <span className="text-[15px] font-space-grotesk">{item.label}</span>
+                        </Link>
+                    );
+                })}
+            </div>
 
-                                    <span
-                                        className={cn(
-                                            "text-sm whitespace-nowrap transition-all duration-300",
-                                            isExpanded ? "w-32 opacity-100 ml-1" : "w-0 opacity-0 ml-0"
-                                        )}
-                                    >
-                                        {item.label}
-                                    </span>
-                                </Link>
-                            </TooltipTrigger>
-
-                            <TooltipContent
-                                side="right"
-                                className={cn(
-                                    "ml-2 font-medium transition-opacity",
-                                    isExpanded ? "hidden pointer-events-none opacity-0" : "visible opacity-100"
-                                )}
-                            >
-                                {item.label}
-                            </TooltipContent>
-                        </Tooltip>
+            {/* Secondary & Workspace */}
+            <div className="px-4 pb-6 space-y-4">
+                {secondaryNavItems.map((item) => {
+                    const isActive = pathname.startsWith(item.href);
+                    const Icon = item.icon;
+                    return (
+                        <Link
+                            key={item.href}
+                            href={item.href}
+                            className={cn(
+                                'flex items-center gap-3 h-12 px-4 rounded-xl border-2 border-transparent transition-all',
+                                isActive
+                                    ? 'bg-hot-pink border-ink shadow-hard-sm text-ink font-bold hover:translate-y-[1px] hover:translate-x-[1px] hover:shadow-[3px_3px_0px_0px_#111111]'
+                                    : 'text-ink hover:bg-canvas hover:border-ink hover:shadow-hard-sm font-medium',
+                            )}
+                        >
+                            <Icon className={cn('size-5', isActive ? 'fill-ink/20' : '')} strokeWidth={isActive ? 2.5 : 2} />
+                            <span className="text-[15px] font-space-grotesk">{item.label}</span>
+                        </Link>
                     );
                 })}
 
-                {/* SECONDARY MENU ITEMS */}
-                <div className="mt-4 mb-4">
-                    {secondaryNavItems.map((item) => {
-                        const isActive = pathname.startsWith(item.href);
-                        const Icon = item.icon;
-
-                        return (
-                            <Tooltip key={item.href} delayDuration={0}>
-                                <TooltipTrigger asChild>
-                                    <Link
-                                        href={item.href}
-                                        className={cn(
-                                            "mx-4 flex h-11 items-center overflow-hidden rounded-xl transition-all duration-300 shrink-0",
-                                            isActive
-                                                ? "bg-white text-slate-900 shadow-sm font-semibold dark:bg-slate-800 dark:text-white"
-                                                : "text-slate-600 hover:bg-white/50 hover:text-slate-900 active:scale-[0.98] dark:text-slate-400 dark:hover:bg-slate-800 dark:hover:text-slate-200"
-                                        )}
-                                    >
-                                        <div className="flex h-11 w-12 shrink-0 items-center justify-center">
-                                            <div className={cn(`flex size-8 shrink-0 items-center justify-center rounded-lg ${item.bg} ${item.color}`)}>
-                                                <Icon className="size-4" />
-                                            </div>
-                                        </div>
-
-                                        <span
-                                            className={cn(
-                                                "text-sm whitespace-nowrap transition-all duration-300",
-                                                isExpanded ? "w-32 opacity-100 ml-1" : "w-0 opacity-0 ml-0"
-                                            )}
-                                        >
-                                            {item.label}
-                                        </span>
-                                    </Link>
-                                </TooltipTrigger>
-
-                                <TooltipContent
-                                    side="right"
-                                    className={cn(
-                                        "ml-2 font-medium transition-opacity",
-                                        isExpanded ? "hidden pointer-events-none opacity-0" : "visible opacity-100"
-                                    )}
-                                >
-                                    {item.label}
-                                </TooltipContent>
-                            </Tooltip>
-                        );
-                    })}
-                </div>
+                {/* Workspace Card */}
+                {/* <div className="mt-4 p-4 border-2 border-ink rounded-[18px] bg-canvas flex items-center gap-3 shadow-hard-md cursor-pointer hover:bg-white hover:translate-y-[-2px] hover:shadow-hard-lg transition-all">
+                    <div className="w-10 h-10 rounded-full bg-lilac border-2 border-ink flex items-center justify-center font-bold text-ink shadow-hard-sm shrink-0">{initials}</div>
+                    <div className="min-w-0 flex-1">
+                        <p className="font-bold text-sm truncate text-ink">{user?.user_metadata?.full_name || 'My Workspace'}</p>
+                        <div className="inline-flex items-center h-5 px-2 mt-0.5 rounded-full bg-canary border-2 border-ink text-[10px] font-bold text-ink uppercase">Team Plan</div>
+                    </div>
+                </div> */}
             </div>
         </div>
     );

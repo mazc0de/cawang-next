@@ -1,57 +1,247 @@
 'use client';
-import Link from 'next/link';
-import { LogOut } from 'lucide-react';
+import { LogOut, Plus, ChevronLeft, ChevronRight, Sparkles } from 'lucide-react';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
-import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { useAuth } from '@/contexts/AuthContext';
+import { usePathname } from 'next/navigation';
+import { useFinancialCycleConfig } from '@/hooks/useFinancialCycleConfig';
+import { getCurrentFinancialCycle, formatDateShort, formatDate } from '@/lib/utils';
+import { useTransactionsContext } from '@/contexts/TransactionsContext';
+import { useBudgetContext } from '@/contexts/BudgetContext';
+import { useCalendarContext } from '@/contexts/CalendarContext';
+import { useRecurringContext } from '@/contexts/RecurringContext';
+import { useCategoriesContext } from '@/contexts/CategoriesContext';
+import { addDays, subDays, addMonths, subMonths } from 'date-fns';
 
 export function TopNavbar() {
     const { user, signOut } = useAuth();
+    const pathname = usePathname();
+    const isOverview = pathname === '/dashboard';
+    const isTransactions = pathname === '/dashboard/transactions';
+    const isBudget = pathname === '/dashboard/budget';
+    const isCalendar = pathname === '/dashboard/calendar';
+    const isRecurring = pathname === '/dashboard/recurring';
+    const isCategories = pathname === '/dashboard/categories';
 
-    const initials = user?.user_metadata?.full_name
-        ? user.user_metadata.full_name
-              .split(' ')
-              .map((n: string) => n[0])
-              .join('')
-              .toUpperCase()
-              .slice(0, 2)
-        : (user?.email?.[0]?.toUpperCase() ?? 'U');
+    const txContext = useTransactionsContext();
+    const selectedDate = txContext?.selectedDate ?? new Date();
+    const setSelectedDate = txContext?.setSelectedDate;
+    const setShowForm = txContext?.setShowForm;
+    const setEditingTransaction = txContext?.setEditingTransaction;
+
+    const budgetContext = useBudgetContext();
+    const openAddBudgetModal = budgetContext?.openAddModal;
+    const openBudgetWizardModal = budgetContext?.openWizardModal;
+
+    const calendarContext = useCalendarContext();
+    const setReferenceDate = calendarContext?.setReferenceDate;
+    const setCalendarSelectedDate = calendarContext?.setSelectedDate;
+
+    const recurringContext = useRecurringContext();
+    const openAddRuleModal = recurringContext?.openAddModal;
+
+    const categoriesContext = useCategoriesContext();
+    const openAddCategoryModal = categoriesContext?.openAddModal;
+
+    const { data: cycleConfig } = useFinancialCycleConfig();
+    const startDay = cycleConfig?.start_day ?? 1;
+    const { startDate, endDate } = getCurrentFinancialCycle(startDay);
+    const cycleRange = `${formatDateShort(startDate)} – ${formatDateShort(endDate)}`;
+
+    const initials =
+        user?.user_metadata?.full_name
+            ?.split(' ')
+            .map((n: string) => n[0])
+            .join('')
+            .toUpperCase()
+            .slice(0, 2) || 'U';
+    const pageTitle = isOverview ? 'Overview' : (pathname.split('/').pop() || 'Dashboard').replace(/-/g, ' ').replace(/\b\w/g, (l) => l.toUpperCase());
 
     return (
-        <header className="sticky top-0 z-50 flex h-16 w-full items-center justify-between border-b border-slate-200 bg-white px-6 shadow-sm dark:border-slate-800 dark:bg-slate-950">
-            <Link href="/dashboard" className="flex items-center gap-2 group">
-                <div className="flex items-center justify-center rounded-full bg-gradient-to-br from-blue-500 to-indigo-500 text-white w-9 h-9 font-bold text-lg leading-none shrink-0 shadow-sm transition-transform duration-500 group-hover:rotate-180">
-                    C
-                </div>
-                <div className="flex flex-col">
-                    <p className="text-lg leading-tight font-extrabold tracking-tight text-slate-900 dark:text-white">
-                        CAWANG
+        <header className="flex h-24 w-full items-center justify-between bg-transparent px-6 lg:px-10 mt-2 shrink-0">
+            {/* Page Title & Subtitle */}
+            <div className="flex flex-col gap-1">
+                <h2 className="font-archivo-black text-4xl text-ink leading-none">{pageTitle}</h2>
+                {isOverview && (
+                    <p className="text-sm font-space-grotesk text-ink/70 font-normal">
+                        Financial Cycle: <span className="font-semibold">{cycleRange}</span>
                     </p>
-                </div>
-            </Link>
+                )}
+                {isTransactions && (
+                    <p className="text-sm font-space-grotesk text-ink/70 font-medium">
+                        {formatDate(selectedDate, 'EEEE, d MMMM yyyy')}
+                    </p>
+                )}
+                {isBudget && (
+                    <p className="text-sm font-space-grotesk text-ink/70 font-medium">
+                        Kelola batas pengeluaran kategori untuk siklus ini
+                    </p>
+                )}
+                {isCalendar && (
+                    <p className="text-sm font-space-grotesk text-ink/70 font-medium">
+                        Kalender arus kas harian & proyeksi tagihan rutin
+                    </p>
+                )}
+                {isRecurring && (
+                    <p className="text-sm font-space-grotesk text-ink/70 font-medium">
+                        Jadwal transaksi rutin, tagihan langganan & cicilan
+                    </p>
+                )}
+                {isCategories && (
+                    <p className="text-sm font-space-grotesk text-ink/70 font-medium">
+                        Kelola label & ikon kategori pemasukan dan pengeluaran
+                    </p>
+                )}
+                {pathname === '/dashboard/settings' && (
+                    <p className="text-sm font-space-grotesk text-ink/70 font-medium">
+                        Kelola profil akun & konfigurasi siklus finansial
+                    </p>
+                )}
+            </div>
 
-            <div className="flex items-center">
+            {/* Right Controls */}
+            <div className="flex items-center gap-3 sm:gap-4">
+                {/* Specific controls for Transactions Page */}
+                {isTransactions && (
+                    <>
+                        {/* Date Navigator */}
+                        <div className="flex items-center gap-1 bg-white rounded-full border-2 border-ink p-1 shadow-hard-sm">
+                            <button
+                                className="h-7 w-7 sm:h-8 sm:w-8 rounded-full flex items-center justify-center hover:bg-canvas text-ink transition-colors cursor-pointer"
+                                onClick={() => setSelectedDate?.((prev) => subDays(prev, 1))}
+                                title="Hari Sebelumnya"
+                            >
+                                <ChevronLeft className="h-4 w-4" strokeWidth={2.5} />
+                            </button>
+                            <button
+                                className="btn-neubrutalism bg-canary text-[11px] sm:text-xs px-2.5 sm:px-3.5 py-1 text-ink h-7"
+                                onClick={() => setSelectedDate?.(new Date())}
+                            >
+                                Hari Ini
+                            </button>
+                            <button
+                                className="h-7 w-7 sm:h-8 sm:w-8 rounded-full flex items-center justify-center hover:bg-canvas text-ink transition-colors cursor-pointer"
+                                onClick={() => setSelectedDate?.((prev) => addDays(prev, 1))}
+                                title="Hari Berikutnya"
+                            >
+                                <ChevronRight className="h-4 w-4" strokeWidth={2.5} />
+                            </button>
+                        </div>
+
+                        {/* Catat Transaksi Button */}
+                        <button
+                            id="btn-navbar-add-transaction"
+                            className="btn-neubrutalism bg-hot-pink text-white px-3.5 sm:px-5 py-2 sm:py-2.5 text-xs sm:text-sm font-space-grotesk flex items-center gap-1.5 sm:gap-2"
+                            onClick={() => {
+                                setEditingTransaction?.(undefined);
+                                setShowForm?.(true);
+                            }}
+                        >
+                            <Plus className="h-4 w-4" strokeWidth={3} />
+                            <span className="hidden sm:inline">Catat Transaksi</span>
+                            <span className="sm:hidden">Catat</span>
+                        </button>
+                    </>
+                )}
+
+                {/* Specific controls for Budget Page */}
+                {isBudget && (
+                    <>
+                        <button
+                            id="btn-navbar-open-wizard"
+                            onClick={() => openBudgetWizardModal?.()}
+                            className="btn-neubrutalism bg-white text-ink px-3 sm:px-4 py-2 sm:py-2.5 text-xs font-space-grotesk flex items-center gap-1.5"
+                        >
+                            <Sparkles className="h-4 w-4 text-hot-pink" strokeWidth={2.5} />
+                            <span className="hidden sm:inline">Budgeting Wizard</span>
+                            <span className="sm:hidden">Wizard</span>
+                        </button>
+                        <button
+                            id="btn-navbar-add-budget"
+                            onClick={() => openAddBudgetModal?.()}
+                            className="btn-neubrutalism bg-hot-pink text-white px-3.5 sm:px-5 py-2 sm:py-2.5 text-xs sm:text-sm font-space-grotesk flex items-center gap-1.5"
+                        >
+                            <Plus className="h-4 w-4" strokeWidth={3} />
+                            <span className="hidden sm:inline">Tambah Budget</span>
+                            <span className="sm:hidden">Tambah</span>
+                        </button>
+                    </>
+                )}
+
+                {/* Specific controls for Calendar Page */}
+                {isCalendar && (
+                    <>
+                        {/* Month Navigator */}
+                        <div className="flex items-center gap-1 bg-white rounded-full border-2 border-ink p-1 shadow-hard-sm">
+                            <button
+                                id="btn-prev-month"
+                                className="h-7 w-7 sm:h-8 sm:w-8 rounded-full flex items-center justify-center hover:bg-canvas text-ink transition-colors cursor-pointer"
+                                onClick={() => setReferenceDate?.((prev) => subMonths(prev, 1))}
+                                title="Bulan Sebelumnya"
+                            >
+                                <ChevronLeft className="h-4 w-4" strokeWidth={2.5} />
+                            </button>
+                            <button
+                                id="btn-today"
+                                className="btn-neubrutalism bg-canary text-[11px] sm:text-xs px-2.5 sm:px-3.5 py-1 text-ink h-7"
+                                onClick={() => {
+                                    setReferenceDate?.(new Date());
+                                    setCalendarSelectedDate?.(new Date());
+                                }}
+                            >
+                                Hari Ini
+                            </button>
+                            <button
+                                id="btn-next-month"
+                                className="h-7 w-7 sm:h-8 sm:w-8 rounded-full flex items-center justify-center hover:bg-canvas text-ink transition-colors cursor-pointer"
+                                onClick={() => setReferenceDate?.((prev) => addMonths(prev, 1))}
+                                title="Bulan Berikutnya"
+                            >
+                                <ChevronRight className="h-4 w-4" strokeWidth={2.5} />
+                            </button>
+                        </div>
+                    </>
+                )}
+
+                {/* Specific controls for Recurring Page */}
+                {isRecurring && (
+                    <>
+                        <button
+                            id="btn-navbar-add-rule"
+                            onClick={() => openAddRuleModal?.()}
+                            className="btn-neubrutalism bg-hot-pink text-white px-3.5 sm:px-5 py-2 sm:py-2.5 text-xs sm:text-sm font-space-grotesk flex items-center gap-1.5"
+                        >
+                            <Plus className="h-4 w-4" strokeWidth={3} />
+                            <span className="hidden sm:inline">Tambah Rule</span>
+                            <span className="sm:hidden">Tambah</span>
+                        </button>
+                    </>
+                )}
+
+                {/* Specific controls for Categories Page */}
+                {isCategories && (
+                    <>
+                        <button
+                            id="btn-navbar-add-category"
+                            onClick={() => openAddCategoryModal?.()}
+                            className="btn-neubrutalism bg-hot-pink text-white px-3.5 sm:px-5 py-2 sm:py-2.5 text-xs sm:text-sm font-space-grotesk flex items-center gap-1.5"
+                        >
+                            <Plus className="h-4 w-4" strokeWidth={3} />
+                            <span className="hidden sm:inline">Tambah Kategori</span>
+                            <span className="sm:hidden">Tambah</span>
+                        </button>
+                    </>
+                )}
+
+                {/* Profile */}
                 <DropdownMenu>
                     <DropdownMenuTrigger asChild>
-                        <button className="flex items-center gap-3 rounded-full border border-slate-200 bg-slate-50 py-1.5 pr-3 pl-4 transition-all hover:bg-slate-100 focus:ring-2 focus:ring-blue-500/40 focus:outline-none dark:border-slate-800 dark:bg-slate-900 dark:hover:bg-slate-800">
-                            <div className="flex flex-col items-end">
-                                <p className="text-sm font-semibold text-slate-700 dark:text-slate-200">
-                                    {user?.user_metadata?.full_name?.split(' ')[0] ?? 'Daffa'}
-                                </p>
-                                <p className="text-[10px] tracking-wider text-slate-500 uppercase">
-                                    {user?.email}
-                                </p>
-                            </div>
-                            <Avatar className="h-8 w-8 rounded-full border border-slate-200 dark:border-slate-700">
-                                <AvatarFallback className="rounded-full bg-blue-100 text-blue-700 font-semibold text-sm dark:bg-blue-900 dark:text-blue-300">
-                                    {initials}
-                                </AvatarFallback>
-                            </Avatar>
+                        <button className="flex items-center justify-center h-11 w-11 sm:h-12 sm:w-12 rounded-full bg-mint border-2 border-ink shadow-hard-sm hover:shadow-hard-md hover:-translate-y-0.5 transition-all outline-none cursor-pointer select-none">
+                            <span className="font-bold text-ink text-sm font-space-mono">{initials}</span>
                         </button>
                     </DropdownMenuTrigger>
-                    <DropdownMenuContent className="mt-2 w-56 rounded-xl border border-slate-100 shadow-xl dark:border-slate-800" align="end">
-                        <DropdownMenuItem id="btn-signout" className="cursor-pointer text-red-600 focus:text-red-700 focus:bg-red-50 dark:focus:bg-red-950/50 rounded-lg flex items-center justify-start gap-2 px-3 py-2 font-medium" onClick={signOut}>
-                            <LogOut className="h-4 w-4" />
+                    <DropdownMenuContent className="w-48 rounded-[16px] border-2 border-ink shadow-hard-md mt-2 p-2 bg-white" align="end">
+                        <DropdownMenuItem id="btn-signout" className="cursor-pointer font-bold text-ink hover:bg-canvas rounded-xl focus:bg-canvas focus:text-ink flex items-center gap-2 px-3 py-2 font-space-grotesk" onClick={signOut}>
+                            <LogOut className="h-4 w-4" strokeWidth={2.5} />
                             Sign out
                         </DropdownMenuItem>
                     </DropdownMenuContent>

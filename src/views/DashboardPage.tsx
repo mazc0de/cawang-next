@@ -3,12 +3,7 @@ import { useState } from 'react';
 import Link from 'next/link';
 import { format } from 'date-fns';
 
-import { TrendingUp, TrendingDown, Wallet, AlertCircle, Plus, ArrowLeftRight, ArrowDown, ArrowUp } from 'lucide-react';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
-import { Progress } from '@/components/ui/progress';
-import { Skeleton } from '@/components/ui/skeleton';
+import { DollarSign, Users, Percent, UserPlus, AlertCircle, Plus, Wallet, TrendingUp, TrendingDown, ArrowDown } from 'lucide-react';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import { formatRupiah, formatDateShort, getCurrentFinancialCycle, cn } from '@/lib/utils';
 import { useAuth } from '@/contexts/AuthContext';
@@ -26,18 +21,16 @@ import { useQueryClient } from '@tanstack/react-query';
 export function DashboardPage() {
     const { user } = useAuth();
     const queryClient = useQueryClient();
-    const firstName = user?.user_metadata?.full_name?.split(' ')[0] ?? 'Pengguna';
+    const firstName = user?.user_metadata?.full_name?.split(' ')[0] ?? 'User';
     const [showForm, setShowForm] = useState(false);
     const [editingTransaction, setEditingTransaction] = useState<any>(undefined);
 
     const todayStr = format(new Date(), 'yyyy-MM-dd');
 
-    // Financial cycle config
     const { data: cycleConfig } = useFinancialCycleConfig();
     const startDay = cycleConfig?.start_day ?? 1;
     const { startDate: cycleStart, endDate: cycleEnd } = getCurrentFinancialCycle(startDay);
 
-    // Real data
     const { data: stats, isLoading: statsLoading } = useDashboardStats(cycleStart, cycleEnd);
     const { data: accounts = [], isLoading: accountsLoading } = useAccounts();
     const { data: todayTransactions = [], isLoading: todayTxLoading } = useTransactions({ start_date: todayStr, end_date: todayStr });
@@ -47,7 +40,6 @@ export function DashboardPage() {
     const updateTransaction = useUpdateTransaction();
     const deleteTransaction = useDeleteTransaction();
 
-    // Budgets for current cycle
     const cycleYear = cycleStart.getFullYear();
     const cycleMonth = cycleStart.getMonth() + 1;
     const { data: budgets = [] } = useBudgets(cycleYear, cycleMonth);
@@ -142,286 +134,287 @@ export function DashboardPage() {
         await deleteTransaction.mutateAsync(id);
     };
 
-    // Komponen StatCard
-    const StatCard = ({ id, icon, label, value, sub, theme }: { id: string; icon: React.ReactNode; label: string; value: string; sub?: string; theme: 'blue' | 'emerald' | 'orange' | 'rose' }) => {
-        const themeStyles = {
-            blue: { border: 'border-[#a7c5f9]', header: 'bg-[#eef4ff]', icon: 'text-[#5a8df2]' },
-            emerald: { border: 'border-[#a8e6cf]', header: 'bg-[#f0fbf7]', icon: 'text-[#4cb791]' },
-            orange: { border: 'border-[#fcd9a1]', header: 'bg-[#fffbf2]', icon: 'text-[#f0a635]' },
-            rose: { border: 'border-[#f8b4b4]', header: 'bg-[#fff5f5]', icon: 'text-[#e65c5c]' },
-        };
-        const style = themeStyles[theme];
-
-        return (
-            <Card id={id} className={cn('p-0 shadow-sm overflow-hidden rounded-2xl bg-white border', style.border)}>
-                <CardHeader className={cn('m-0 border-b-0 pb-3 pt-3 px-5', style.header)}>
-                    <CardDescription className="flex items-center gap-2 text-slate-800 font-semibold text-sm">
-                        <span className={style.icon}>{icon}</span>
-                        {label}
-                    </CardDescription>
-                </CardHeader>
-                <CardContent className="pt-4 px-5 pb-5">
-                    {statsLoading ? <Skeleton className="h-8 w-32 bg-slate-200" /> : <p className="text-2xl font-bold tracking-tight text-slate-900">{value}</p>}
-                    {sub && <p className="text-xs text-slate-500 mt-1.5">{sub}</p>}
-                </CardContent>
-            </Card>
-        );
-    };
+    const totalSpent = budgets.reduce((sum: number, b: any) => sum + (b.spent ?? 0), 0);
+    const totalBudget = budgets.reduce((sum: number, b: any) => sum + (b.amount ?? 0), 0);
+    const budgetProgress = totalBudget > 0 ? Math.min(Math.round((totalSpent / totalBudget) * 100), 100) : 0;
 
     return (
-        <div className="flex flex-col min-h-svh bg-[#f2fafa] dark:bg-background">
-            <main className="flex-1 p-6 md:p-8 space-y-8 max-w-7xl mx-auto w-full">
-                <div className="flex flex-wrap items-start justify-between gap-4">
+        <div className="space-y-8 pb-10">
+            {/* 1. TOP 5 STAT CARDS */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-4 sm:gap-5">
+                <StatCard title="Net Worth" value={formatRupiah(stats?.net_worth ?? 0)} sub="Total saldo semua Account" icon={<Wallet className="h-5 w-5 text-ink" strokeWidth={2.5} />} color="bg-hot-pink" />
+                <StatCard title="Pengeluaran Hari Ini" value={formatRupiah(stats?.expense_today ?? 0)} sub="Total outflow hari ini" icon={<ArrowDown className="h-5 w-5 text-ink" strokeWidth={2.5} />} color="bg-coral" />
+                <StatCard title="Income Cycle Ini" value={formatRupiah(stats?.income_this_cycle ?? 0)} sub="Total inflow periode ini" icon={<TrendingUp className="h-5 w-5 text-ink" strokeWidth={2.5} />} color="bg-mint" />
+                <StatCard title="Pengeluaran Cycle Ini" value={formatRupiah(stats?.expense_this_cycle ?? 0)} sub="Total outflow periode ini" icon={<TrendingDown className="h-5 w-5 text-ink" strokeWidth={2.5} />} color="bg-canary" />
+                <StatCard
+                    title="Cash Flow"
+                    value={(cashFlow >= 0 ? '+' : '') + formatRupiah(cashFlow)}
+                    sub="Income - Pengeluaran"
+                    icon={cashFlow >= 0 ? <TrendingUp className="h-5 w-5 text-ink" strokeWidth={2.5} /> : <TrendingDown className="h-5 w-5 text-ink" strokeWidth={2.5} />}
+                    color="bg-lilac"
+                />
+            </div>
+
+            {/* 2. MAIN 2-COLUMN: Account Summary & Budget vs Actual */}
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                {/* Account Summary */}
+                <div className="card-neubrutalism bg-white p-6 flex flex-col justify-between">
                     <div>
-                        <h2 className="text-3xl font-bold tracking-tight text-slate-900">Hello, {firstName} 👋</h2>
-                        <p className="text-slate-500 text-sm mt-2">
-                            Financial Cycle:{' '}
-                            <span className="font-medium text-slate-700">
-                                {formatDateShort(cycleStart)} – {formatDateShort(cycleEnd)}
-                            </span>
-                        </p>
-                    </div>
-                    <div className="flex items-center gap-3">
-                        {(stats?.pending_confirmations_count ?? 0) > 0 && (
-                            <Link href="/dashboard/recurring">
-                                <Badge className="gap-1.5 cursor-pointer bg-[#fcd9a1] hover:bg-[#f3cb8d] text-slate-800 rounded-full px-3 py-2 border-none shadow-none" id="badge-pending">
-                                    <AlertCircle className="h-4 w-4" />
-                                    {stats!.pending_confirmations_count} Pending
-                                </Badge>
+                        <div className="flex justify-between items-center mb-6">
+                            <h3 className="font-archivo-black text-xl text-ink">Account Summary</h3>
+                            <Link href="/dashboard/accounts" className="btn-neubrutalism bg-white px-3.5 py-1.5 text-xs font-space-grotesk text-ink inline-block">
+                                Kelola
                             </Link>
-                        )}
-                        <Button
-                            size="sm"
-                            id="btn-add-transaction"
-                            className="gap-1.5 h-9 bg-[#8ab4f8] hover:bg-[#739ce3] text-white rounded-full px-5 shadow-none"
-                            onClick={() => {
-                                setEditingTransaction(undefined);
-                                setShowForm(true);
-                            }}
-                        >
-                            <Plus className="h-4 w-4" />
-                            Catat Transaksi
-                        </Button>
-                    </div>
-                </div>
-
-                <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-5">
-                    <StatCard id="card-net-worth" icon={<Wallet className="h-4 w-4" />} label="Net Worth" value={formatRupiah(stats?.net_worth ?? 0)} sub="Total saldo semua Account" theme="blue" />
-                    <StatCard id="card-expense-today" icon={<ArrowDown className="h-4 w-4" />} label="Pengeluaran Hari Ini" value={formatRupiah(stats?.expense_today ?? 0)} sub="Total outflow hari ini" theme="rose" />
-                    <StatCard id="card-income" icon={<TrendingUp className="h-4 w-4" />} label="Income Cycle Ini" value={formatRupiah(stats?.income_this_cycle ?? 0)} sub="Total inflow periode ini" theme="emerald" />
-                    <StatCard id="card-expense" icon={<ArrowDown className="h-4 w-4" />} label="Pengeluaran Cycle Ini" value={formatRupiah(stats?.expense_this_cycle ?? 0)} sub="Total outflow periode ini" theme="orange" />
-                    <StatCard id="card-cashflow" icon={<TrendingDown className="h-4 w-4" />} label="Cash Flow" value={(cashFlow >= 0 ? '+' : '') + formatRupiah(cashFlow)} sub="Income - Pengeluaran" theme="blue" />
-                </div>
-
-                <div className="grid gap-6 lg:grid-cols-2">
-                    {/* Main Card 1: Account */}
-                    <Card id="card-accounts" className="p-0 shadow-sm rounded-2xl bg-white border border-[#a7c5f9] overflow-hidden">
-                        <CardHeader className="m-0 border-b-0 pb-3 pt-4 px-6 bg-[#eef4ff]">
-                            <div className="flex items-center justify-between">
-                                <CardTitle className="text-base font-bold text-slate-800">Account Summary</CardTitle>
-                                <Button variant="ghost" size="sm" className="h-8 text-xs rounded-full px-4 text-[#5a8df2] hover:bg-[#a7c5f9]/30" id="btn-manage-accounts" asChild>
-                                    <Link href="/dashboard/accounts">Kelola</Link>
-                                </Button>
-                            </div>
-                        </CardHeader>
-                        <CardContent className="px-6 pb-6 pt-5">
-                            {accountsLoading && <Skeleton className="h-24 w-full bg-slate-100" />}
-                            {!accountsLoading && accounts.length === 0 && (
-                                <div className="text-center py-6">
-                                    <p className="text-sm text-slate-500">Belum ada Account</p>
-                                    <Button variant="link" size="sm" className="h-7 text-xs mt-1 text-[#5a8df2]" asChild>
-                                        <Link href="/dashboard/accounts">Tambah Account →</Link>
-                                    </Button>
-                                </div>
-                            )}
-                            {!accountsLoading && accounts.length > 0 && (
-                                <div className="space-y-4">
-                                    {accounts.map((acc, i) => (
-                                        <div key={acc.id} className={cn('flex items-center justify-between', i !== accounts.length - 1 && 'border-b border-slate-100 pb-4')}>
-                                            <div className="flex items-center gap-3">
-                                                <div className="h-10 w-10 rounded-xl bg-[#eef4ff] flex items-center justify-center text-lg font-bold text-[#5a8df2]">{acc.name[0].toUpperCase()}</div>
-                                                <div>
-                                                    <p className="font-semibold text-sm leading-none text-slate-800">{acc.name}</p>
-                                                </div>
-                                            </div>
-                                            <p className="text-sm font-semibold text-slate-800">{formatRupiah(acc.actual_balance, true)}</p>
-                                        </div>
-                                    ))}
-                                </div>
-                            )}
-                        </CardContent>
-                    </Card>
-
-                    {/* Main Card 2: Budget */}
-                    <Card id="card-budget" className="p-0 shadow-sm rounded-2xl bg-white border border-[#a8e6cf] overflow-hidden">
-                        <CardHeader className="m-0 border-b-0 pb-3 pt-4 px-6 bg-[#f0fbf7]">
-                            <div className="flex items-center justify-between">
-                                <CardTitle className="text-base font-bold text-slate-800">Budget vs Actual</CardTitle>
-                                <Button variant="ghost" size="sm" className="h-8 text-xs rounded-full px-4 text-[#4cb791] hover:bg-[#a8e6cf]/30" id="btn-manage-budget" asChild>
-                                    <Link href="/dashboard/budget">Atur Budget</Link>
-                                </Button>
-                            </div>
-                        </CardHeader>
-                        <CardContent className="px-6 pb-6 pt-5">
-                            {budgets.length === 0 ? (
-                                <div className="text-center py-6">
-                                    <p className="text-sm text-slate-500">Belum ada Budget</p>
-                                    <Button variant="link" size="sm" className="h-7 text-xs mt-1 text-[#4cb791]" asChild>
-                                        <Link href="/dashboard/budget">Buat Budget →</Link>
-                                    </Button>
-                                </div>
-                            ) : (
-                                <div className="flex flex-col gap-6">
-                                    <div className="space-y-2">
-                                        <div className="flex items-center justify-between text-sm">
-                                            <span className="font-medium text-slate-500">Budget progress</span>
-                                        </div>
-                                        <Progress
-                                            value={Math.min(
-                                                (budgets.reduce((sum: number, b: any) => sum + (b.spent ?? 0), 0) /
-                                                    Math.max(
-                                                        1,
-                                                        budgets.reduce((sum: number, b: any) => sum + b.amount, 0),
-                                                    )) *
-                                                    100,
-                                                100,
-                                            )}
-                                            className="h-2.5 rounded-full [&>div]:bg-[#4cb791] bg-[#e2f7ef]"
-                                        />
-                                    </div>
-
-                                    <div className="grid grid-cols-2 gap-4">
-                                        <div className="grid grid-cols-2 gap-y-3 text-xs text-slate-700">
-                                            {budgets.slice(0, 4).map((b: any, idx: number) => {
-                                                const colors = ['bg-[#4cb791]', 'bg-[#8ab4f8]', 'bg-[#fcd9a1]', 'bg-[#f8b4b4]'];
-                                                return (
-                                                    <div key={b.id} className="flex items-center gap-1.5">
-                                                        <div className={cn('w-2 h-2 rounded-full', colors[idx % colors.length])}></div>
-                                                        <span className="truncate">{b.category?.name ?? 'Kategori'}</span>
-                                                    </div>
-                                                );
-                                            })}
-                                        </div>
-                                        <div className="flex items-center justify-end">
-                                            <div className="w-24 h-24 rounded-full border-[12px] border-[#4cb791] border-r-[#8ab4f8] border-b-[#fcd9a1] relative flex items-center justify-center">
-                                                <div className="w-full h-full rounded-full bg-white"></div>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-                            )}
-                        </CardContent>
-                    </Card>
-                </div>
-
-                {/* Main Card 3: Transactions Today */}
-                <Card id="card-recent-transactions" className="p-0 shadow-sm rounded-2xl bg-white border border-[#e2e8f0] overflow-hidden">
-                    <CardHeader className="m-0 border-b-0 pb-3 pt-4 px-6 bg-[#f8fafc]">
-                        <div className="flex items-center justify-between">
-                            <CardTitle className="text-base font-bold text-slate-800">Transactions Today</CardTitle>
-                            <div className="flex items-center gap-2">
-                                <Button
-                                    size="sm"
-                                    variant="outline"
-                                    className="h-8 text-xs rounded-full px-3 gap-1 border-slate-200 text-slate-700 hover:bg-slate-100"
-                                    onClick={() => {
-                                        setEditingTransaction(undefined);
-                                        setShowForm(true);
-                                    }}
-                                >
-                                    <Plus className="h-3.5 w-3.5" /> Catat
-                                </Button>
-                                <Button variant="ghost" size="sm" className="h-8 text-xs rounded-full px-4 text-slate-600 hover:bg-slate-200" id="btn-view-all-transactions" asChild>
-                                    <Link href="/dashboard/transactions">Lihat Semua</Link>
-                                </Button>
-                            </div>
                         </div>
-                    </CardHeader>
-                    <CardContent className="px-6 pb-6 pt-5">
-                        {todayTxLoading && (
-                            <div className="space-y-2">
+
+                        {accountsLoading && (
+                            <div className="space-y-3">
                                 {[1, 2, 3].map((i) => (
-                                    <Skeleton key={i} className="h-12 w-full bg-slate-100" />
+                                    <div key={i} className="h-14 w-full bg-canvas animate-pulse rounded-xl border-2 border-ink/10" />
                                 ))}
                             </div>
                         )}
-                        {!todayTxLoading && todayTransactions.length === 0 && (
-                            <div className="text-center py-6">
-                                <p className="text-sm text-slate-500">Belum ada transaksi hari ini</p>
-                                <Button
-                                    variant="link"
-                                    size="sm"
-                                    className="h-7 text-xs mt-1 text-slate-600"
-                                    onClick={() => {
-                                        setEditingTransaction(undefined);
-                                        setShowForm(true);
-                                    }}
-                                >
-                                    Catat transaksi pertama hari ini →
-                                </Button>
+
+                        {!accountsLoading && accounts.length === 0 && (
+                            <div className="text-center py-8">
+                                <p className="font-space-grotesk font-medium text-sm text-ink/60 mb-3">Belum ada Account</p>
+                                <Link href="/dashboard/accounts" className="btn-neubrutalism bg-canary px-4 py-2 text-xs font-space-grotesk inline-block">
+                                    Tambah Account →
+                                </Link>
                             </div>
                         )}
-                        {!todayTxLoading && todayTransactions.length > 0 && (
-                            <div className="space-y-0">
-                                {todayTransactions.map((tx, i) => {
-                                    const isTransfer = !!tx.transfer_pair_id;
-                                    const acc = (tx as any).account;
-                                    const cat = (tx as any).category;
+
+                        {!accountsLoading && accounts.length > 0 && (
+                            <div className="space-y-4">
+                                {accounts.map((acc, i) => {
+                                    const colors = ['bg-hot-pink', 'bg-canary', 'bg-mint', 'bg-lilac'];
+                                    const color = colors[i % colors.length];
+                                    const totalActual = accounts.reduce((sum, a) => sum + (a.actual_balance || 0), 0);
+                                    const pct = totalActual > 0 ? Math.min(100, Math.max(8, Math.round((acc.actual_balance / totalActual) * 100))) : 20;
+
                                     return (
-                                        <div key={tx.id} className={cn('flex items-center gap-4 py-3 group', i !== todayTransactions.length - 1 && 'border-b border-slate-100')}>
-                                            <div
-                                                className={cn(
-                                                    'h-8 w-8 rounded-full flex items-center justify-center shrink-0',
-                                                    isTransfer ? 'bg-[#eef4ff] text-[#5a8df2]' : tx.type === 'inflow' ? 'bg-[#f0fbf7] text-[#4cb791]' : 'bg-[#fff5f5] text-[#e65c5c]',
-                                                )}
-                                            >
-                                                {isTransfer ? <ArrowLeftRight className="h-4 w-4" /> : tx.type === 'inflow' ? <ArrowUp className="h-4 w-4" /> : <ArrowDown className="h-4 w-4" />}
+                                        <div key={acc.id} className="p-3.5 rounded-[14px] bg-white border-2 border-ink shadow-hard-sm hover:-translate-y-0.5 hover:shadow-hard-md transition-all flex items-center justify-between gap-4">
+                                            <div className="flex items-center gap-3.5 min-w-0">
+                                                <div
+                                                    className={cn(
+                                                        'w-10 h-10 rounded-[10px] border-2 border-ink flex items-center justify-center font-archivo-black text-sm text-ink shrink-0 shadow-[2px_2px_0px_0px_rgba(17,17,17,1)]',
+                                                        color,
+                                                    )}
+                                                >
+                                                    {acc.name[0]?.toUpperCase() ?? '-'}
+                                                </div>
+                                                <div className="min-w-0">
+                                                    <p className="font-space-grotesk font-bold text-sm text-ink truncate leading-tight">{acc.name}</p>
+                                                    <div className="w-28 sm:w-36 h-2 mt-1.5 bg-canvas border border-ink rounded-full overflow-hidden">
+                                                        <div className={cn('h-full border-r border-ink', color)} style={{ width: `${pct}%` }}></div>
+                                                    </div>
+                                                </div>
                                             </div>
-                                            <div className="flex-1 min-w-0 flex items-center gap-2">
-                                                <p className="text-sm font-medium w-1/3 truncate text-slate-800">{tx.notes || cat?.name || '—'}</p>
-                                                <p className="text-xs text-slate-500 flex-1 hidden sm:block truncate">
-                                                    {cat?.name ? `${cat.name} • ` : ''}
-                                                    {acc?.name}
-                                                </p>
+                                            <div className="text-right shrink-0">
+                                                <p className="font-space-mono font-bold text-sm text-ink">{formatRupiah(acc.actual_balance, true)}</p>
                                             </div>
-                                            <p className={cn('text-sm font-semibold tabular-nums shrink-0', isTransfer ? 'text-[#5a8df2]' : tx.type === 'inflow' ? 'text-[#4cb791]' : 'text-slate-800')}>
-                                                {tx.type === 'inflow' ? '+' : '-'}
-                                                {formatRupiah(tx.amount, true)}
-                                            </p>
-                                            <DropdownMenu>
-                                                <DropdownMenuTrigger asChild>
-                                                    <Button variant="ghost" size="icon" className="h-8 w-8 rounded-full opacity-0 group-hover:opacity-100 transition-opacity shrink-0 text-slate-400 hover:text-slate-700 hover:bg-slate-200">
-                                                        <span className="sr-only">Menu</span>
-                                                        <svg className="h-4 w-4" fill="currentColor" viewBox="0 0 16 16">
-                                                            <circle cx="8" cy="3" r="1.5" />
-                                                            <circle cx="8" cy="8" r="1.5" />
-                                                            <circle cx="8" cy="13" r="1.5" />
-                                                        </svg>
-                                                    </Button>
-                                                </DropdownMenuTrigger>
-                                                <DropdownMenuContent align="end" className="rounded-xl">
-                                                    <DropdownMenuItem
-                                                        className="cursor-pointer rounded-lg"
-                                                        onClick={() => {
-                                                            setEditingTransaction(tx);
-                                                            setShowForm(true);
-                                                        }}
-                                                    >
-                                                        Edit
-                                                    </DropdownMenuItem>
-                                                    <DropdownMenuItem className="text-red-500 focus:text-red-600 focus:bg-red-50 cursor-pointer rounded-lg" onClick={() => handleDeleteTransaction(tx.id)}>
-                                                        Hapus
-                                                    </DropdownMenuItem>
-                                                </DropdownMenuContent>
-                                            </DropdownMenu>
                                         </div>
                                     );
                                 })}
                             </div>
                         )}
-                    </CardContent>
-                </Card>
-            </main>
+                    </div>
+                </div>
+
+                {/* Budget vs Actual */}
+                <div className="card-neubrutalism bg-white p-6 flex flex-col">
+                    <div className="flex justify-between items-center mb-6">
+                        <h3 className="font-archivo-black text-xl text-ink">Budget vs Actual</h3>
+                        <Link href="/dashboard/budget" className="btn-neubrutalism bg-white px-3.5 py-1.5 text-xs font-space-grotesk text-ink inline-block">
+                            Atur Budget
+                        </Link>
+                    </div>
+
+                    {budgets.length === 0 ? (
+                        <div className="flex-1 flex flex-col items-center justify-center py-10 min-h-[220px] text-center">
+                            <p className="font-space-grotesk font-medium text-sm text-ink/60 mb-4">Belum ada Budget pada periode ini</p>
+                            <Link href="/dashboard/budget" className="btn-neubrutalism bg-mint px-5 py-2.5 text-xs font-space-grotesk inline-block">
+                                Buat Budget →
+                            </Link>
+                        </div>
+                    ) : (
+                            <div className="space-y-6">
+                                {/* Overall Progress Bar */}
+                                <div className="p-4 rounded-[14px] bg-canvas border-2 border-ink shadow-hard-sm space-y-3">
+                                    <div className="flex items-center justify-between text-xs font-space-grotesk font-bold text-ink">
+                                        <span>Total Terpakai: {formatRupiah(totalSpent)}</span>
+                                        <span className="font-space-mono">{budgetProgress}%</span>
+                                    </div>
+                                    <div className="w-full h-4 bg-white border-2 border-ink rounded-full overflow-hidden p-0.5 shadow-[2px_2px_0px_0px_rgba(17,17,17,1)]">
+                                        <div className={cn('h-full rounded-full border border-ink transition-all', budgetProgress > 90 ? 'bg-coral' : budgetProgress > 70 ? 'bg-canary' : 'bg-mint')} style={{ width: `${budgetProgress}%` }} />
+                                    </div>
+                                    <div className="flex justify-between text-[11px] font-space-mono text-ink/70">
+                                        <span>Budget: {formatRupiah(totalBudget)}</span>
+                                        <span>Sisa: {formatRupiah(Math.max(0, totalBudget - totalSpent))}</span>
+                                    </div>
+                                </div>
+
+                                {/* Category Breakdown */}
+                                <div className="space-y-3">
+                                    <h4 className="font-space-grotesk font-bold text-xs uppercase tracking-wider text-ink/70">Kategori Utama</h4>
+                                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                                        {budgets.slice(0, 4).map((b: any, idx: number) => {
+                                            const colors = ['bg-hot-pink', 'bg-canary', 'bg-mint', 'bg-lilac'];
+                                            const catColor = colors[idx % colors.length];
+                                            const bSpent = b.spent ?? 0;
+                                            const bPct = b.amount > 0 ? Math.min(100, Math.round((bSpent / b.amount) * 100)) : 0;
+
+                                            return (
+                                                <div key={b.id} className="p-3 rounded-[12px] bg-white border-2 border-ink shadow-hard-sm">
+                                                    <div className="flex items-center justify-between mb-1.5">
+                                                        <div className="flex items-center gap-2 min-w-0">
+                                                            <div className={cn('w-2.5 h-2.5 rounded-full border border-ink shrink-0', catColor)} />
+                                                            <span className="font-space-grotesk font-bold text-xs text-ink truncate">{b.category?.name ?? 'Kategori'}</span>
+                                                        </div>
+                                                        <span className="font-space-mono text-[10px] font-bold text-ink shrink-0">{bPct}%</span>
+                                                    </div>
+                                                    <div className="w-full h-2 bg-canvas border border-ink rounded-full overflow-hidden">
+                                                        <div className={cn('h-full border-r border-ink', catColor)} style={{ width: `${bPct}%` }} />
+                                                    </div>
+                                                    <div className="flex justify-between mt-1 text-[10px] font-space-mono text-ink/60">
+                                                        <span>{formatRupiah(bSpent)}</span>
+                                                        <span>/ {formatRupiah(b.amount)}</span>
+                                                    </div>
+                                                </div>
+                                            );
+                                        })}
+                                    </div>
+                                </div>
+                            </div>
+                        )}
+                </div>
+            </div>
+
+            {/* 3. FULL-WIDTH: Transactions Today */}
+            <div className="card-neubrutalism bg-white p-6">
+                <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6">
+                    <div>
+                        <h3 className="font-archivo-black text-xl text-ink">Transactions Today</h3>
+                        <p className="font-space-grotesk text-xs text-ink/60 mt-0.5">Daftar transaksi yang tercatat hari ini</p>
+                    </div>
+                    <div className="flex items-center gap-3">
+                        <button
+                            className="btn-neubrutalism bg-hot-pink px-4 py-2 text-xs font-space-grotesk text-ink flex items-center gap-1.5"
+                            onClick={() => {
+                                setEditingTransaction(undefined);
+                                setShowForm(true);
+                            }}
+                        >
+                            <Plus className="h-3.5 w-3.5" /> Catat
+                        </button>
+                        <Link href="/dashboard/transactions" className="btn-neubrutalism bg-white px-4 py-2 text-xs font-space-grotesk text-ink inline-block">
+                            Lihat Semua
+                        </Link>
+                    </div>
+                </div>
+
+                {todayTxLoading && (
+                    <div className="space-y-3">
+                        {[1, 2, 3].map((i) => (
+                            <div key={i} className="h-14 w-full bg-canvas animate-pulse rounded-xl border-2 border-ink/10" />
+                        ))}
+                    </div>
+                )}
+
+                {!todayTxLoading && todayTransactions.length === 0 && (
+                    <div className="text-center py-10 rounded-[14px] bg-canvas border-2 border-dashed border-ink/20">
+                        <p className="font-space-grotesk font-medium text-sm text-ink/60 mb-2">Belum ada transaksi hari ini</p>
+                        <button
+                            className="font-space-grotesk font-bold text-xs text-hot-pink hover:underline"
+                            onClick={() => {
+                                setEditingTransaction(undefined);
+                                setShowForm(true);
+                            }}
+                        >
+                            Catat transaksi pertama hari ini →
+                        </button>
+                    </div>
+                )}
+
+                {!todayTxLoading && todayTransactions.length > 0 && (
+                    <div className="space-y-3">
+                        {todayTransactions.map((tx) => {
+                            const isTransfer = !!tx.transfer_pair_id;
+                            const isIncome = tx.type === 'inflow';
+                            const acc = (tx as any).account;
+                            const cat = (tx as any).category;
+
+                            return (
+                                <div key={tx.id} className="p-3.5 sm:p-4 rounded-[14px] bg-white border-2 border-ink shadow-hard-sm hover:shadow-hard-md hover:-translate-y-0.5 transition-all flex items-center justify-between gap-3 group">
+                                    <div className="flex items-center gap-3.5 min-w-0">
+                                        <div
+                                            className={cn(
+                                                'w-10 h-10 rounded-[12px] border-2 border-ink flex items-center justify-center shrink-0 shadow-[2px_2px_0px_0px_rgba(17,17,17,1)]',
+                                                isTransfer ? 'bg-canary' : isIncome ? 'bg-mint' : 'bg-coral',
+                                            )}
+                                        >
+                                            {isTransfer ? (
+                                                <span className="font-bold text-xs text-ink">⇄</span>
+                                            ) : isIncome ? (
+                                                <TrendingUp className="h-4 w-4 text-ink" strokeWidth={2.5} />
+                                            ) : (
+                                                <ArrowDown className="h-4 w-4 text-ink" strokeWidth={2.5} />
+                                            )}
+                                        </div>
+                                        <div className="min-w-0">
+                                            <p className="font-space-grotesk font-bold text-sm text-ink truncate leading-tight">{tx.notes || cat?.name || '—'}</p>
+                                            <p className="font-space-mono text-xs text-ink/60 truncate mt-0.5">
+                                                {cat?.name ? `${cat.name} • ` : ''}
+                                                {acc?.name}
+                                            </p>
+                                        </div>
+                                    </div>
+
+                                    <div className="flex items-center gap-3 shrink-0">
+                                        <span
+                                            className={cn(
+                                                'hidden sm:inline-flex items-center justify-center px-2.5 py-0.5 rounded-full border border-ink font-space-grotesk font-bold text-[10px] text-ink uppercase tracking-wide',
+                                                isTransfer ? 'bg-canary' : isIncome ? 'bg-mint' : 'bg-coral',
+                                            )}
+                                        >
+                                            {isTransfer ? 'Transfer' : isIncome ? 'Income' : 'Expense'}
+                                        </span>
+                                        <p className={cn('font-space-mono font-bold text-sm tabular-nums', isIncome ? 'text-mint font-extrabold' : 'text-ink')}>
+                                            {isIncome ? '+' : '-'}
+                                            {formatRupiah(tx.amount, true)}
+                                        </p>
+                                        <DropdownMenu>
+                                            <DropdownMenuTrigger asChild>
+                                                <button className="h-8 w-8 rounded-full border border-transparent hover:border-ink hover:bg-canvas flex items-center justify-center transition-all text-ink">
+                                                    <span className="sr-only">Menu</span>
+                                                    <span className="font-bold text-base leading-none">⋯</span>
+                                                </button>
+                                            </DropdownMenuTrigger>
+                                            <DropdownMenuContent align="end" className="rounded-[16px] border-2 border-ink shadow-hard-md bg-white p-2">
+                                                <DropdownMenuItem
+                                                    className="cursor-pointer font-bold text-ink hover:bg-canvas rounded-xl mb-1 px-3 py-2 font-space-grotesk"
+                                                    onClick={() => {
+                                                        setEditingTransaction(tx);
+                                                        setShowForm(true);
+                                                    }}
+                                                >
+                                                    Edit
+                                                </DropdownMenuItem>
+                                                <DropdownMenuItem
+                                                    className="cursor-pointer font-bold text-coral hover:bg-coral/10 focus:bg-coral/10 focus:text-coral rounded-xl px-3 py-2 font-space-grotesk"
+                                                    onClick={() => handleDeleteTransaction(tx.id)}
+                                                >
+                                                    Hapus
+                                                </DropdownMenuItem>
+                                            </DropdownMenuContent>
+                                        </DropdownMenu>
+                                    </div>
+                                </div>
+                            );
+                        })}
+                    </div>
+                )}
+            </div>
 
             <TransactionFormDialog
                 open={showForm}
@@ -435,6 +428,38 @@ export function DashboardPage() {
                 categories={categories}
                 onSuccess={handleTransactionSubmit}
             />
+        </div>
+    );
+}
+
+function StatCard({ title, value, sub, icon, color }: { title: string; value: string; sub?: string; icon: React.ReactNode; color: string }) {
+    return (
+        <div className="card-neubrutalism bg-white p-5 flex flex-col justify-between transition-transform hover:-translate-y-1 group">
+            <div>
+                <div className="flex justify-between items-start mb-3">
+                    <div
+                        className={cn(
+                            'w-10 h-10 rounded-[12px] border-2 border-ink shadow-hard-sm flex items-center justify-center shrink-0 group-hover:shadow-hard-md group-hover:-translate-y-[1px] group-hover:-translate-x-[1px] transition-all',
+                            color,
+                        )}
+                    >
+                        {icon}
+                    </div>
+                </div>
+                <div className="font-space-grotesk font-bold text-ink/70 text-xs uppercase tracking-wider mb-1">{title}</div>
+                <div className="font-archivo-black text-2xl text-ink tracking-tight truncate mb-1">{value}</div>
+            </div>
+            {sub && <div className="font-space-mono text-[10px] text-ink/60 font-medium truncate mt-2">{sub}</div>}
+        </div>
+    );
+}
+
+function LegendRow({ color, label, value }: { color: string; label: string; value: string }) {
+    return (
+        <div className="flex items-center gap-3">
+            <div className={cn('w-4 h-4 rounded-full border-2 border-ink shrink-0 shadow-hard-sm', color)}></div>
+            <span className="font-space-grotesk font-bold text-sm text-ink flex-1">{label}</span>
+            <span className="font-space-mono font-bold text-[13px] text-ink">{value}</span>
         </div>
     );
 }

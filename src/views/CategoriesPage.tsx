@@ -1,18 +1,15 @@
 "use client";
-import { useState } from 'react'
-import { Plus, Tags, Pencil, Trash2 } from 'lucide-react'
-import { Button } from '@/components/ui/button'
-import { DashboardCard, DashboardCardContent } from '@/components/shared/DashboardCard'
-
-import { Skeleton } from '@/components/ui/skeleton'
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
-import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog'
-import { Input } from '@/components/ui/input'
-import { Label } from '@/components/ui/label'
-import { DashboardHeader } from '@/components/layout/DashboardHeader'
-import { useCategories, useCreateCategory, useUpdateCategory, useDeleteCategory } from '@/hooks/useCategories'
-import type { Category } from '@/types/domain'
-import { CategoryIcon } from '@/components/shared/CategoryIcon'
+import { useState } from 'react';
+import { Plus, Tags, Pencil, Trash2, ArrowDownRight, ArrowUpRight, Check } from 'lucide-react';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { useCategories, useCreateCategory, useUpdateCategory, useDeleteCategory } from '@/hooks/useCategories';
+import type { Category } from '@/types/domain';
+import { CategoryIcon } from '@/components/shared/CategoryIcon';
+import { useCategoriesContext } from '@/contexts/CategoriesContext';
+import { cn } from '@/lib/utils';
 
 const AVAILABLE_ICONS = [
   'ShoppingBag', 'ShoppingCart', 'Utensils', 'Coffee', 'Car', 'Plane', 'Train',
@@ -20,43 +17,50 @@ const AVAILABLE_ICONS = [
   'Briefcase', 'BookOpen', 'GraduationCap', 'HeartPulse', 'Stethoscope',
   'PiggyBank', 'Wallet', 'CreditCard', 'Banknote', 'TrendingUp', 'TrendingDown',
   'ArrowRightLeft', 'Gift', 'Baby', 'Dog', 'Cat', 'Shirt', 'Camera', 'Smile'
-]
+];
 
 export function CategoriesPage() {
-  const { data: categories = [], isLoading } = useCategories()
-  const createCategory = useCreateCategory()
-  const updateCategory = useUpdateCategory()
-  const deleteCategory = useDeleteCategory()
+  const { data: categories = [], isLoading } = useCategories();
+  const createCategory = useCreateCategory();
+  const updateCategory = useUpdateCategory();
+  const deleteCategory = useDeleteCategory();
 
-  const [showForm, setShowForm] = useState(false)
-  const [editCategory, setEditCategory] = useState<Category | null>(null)
-  const [activeTab, setActiveTab] = useState<'inflow' | 'outflow'>('outflow')
+  const categoriesContext = useCategoriesContext();
+  const [localShowForm, setLocalShowForm] = useState(false);
+  const [localEditCategory, setLocalEditCategory] = useState<Category | null>(null);
+
+  const showForm = categoriesContext?.showForm ?? localShowForm;
+  const setShowForm = categoriesContext?.setShowForm ?? setLocalShowForm;
+  const editCategory = categoriesContext?.editCategory ?? localEditCategory;
+  const setEditCategory = categoriesContext?.setEditCategory ?? setLocalEditCategory;
+
+  const [activeTab, setActiveTab] = useState<'outflow' | 'inflow'>('outflow');
   
-  const [formName, setFormName] = useState('')
-  const [formIcon, setFormIcon] = useState('ShoppingBag')
-  const [formType, setFormType] = useState<'inflow' | 'outflow'>('outflow')
+  const [formName, setFormName] = useState('');
+  const [formIcon, setFormIcon] = useState('ShoppingBag');
+  const [formType, setFormType] = useState<'inflow' | 'outflow'>('outflow');
 
-  const inflowCategories = categories.filter(c => c.type === 'inflow')
-  const outflowCategories = categories.filter(c => c.type === 'outflow')
+  const inflowCategories = categories.filter((c) => c.type === 'inflow');
+  const outflowCategories = categories.filter((c) => c.type === 'outflow');
 
-  const handleOpenAdd = (type: 'inflow' | 'outflow') => {
-    setEditCategory(null)
-    setFormName('')
-    setFormIcon(type === 'inflow' ? 'Wallet' : 'ShoppingBag')
-    setFormType(type)
-    setShowForm(true)
-  }
+  const handleOpenAdd = (type: 'inflow' | 'outflow' = activeTab) => {
+    setEditCategory(null);
+    setFormName('');
+    setFormIcon(type === 'inflow' ? 'Wallet' : 'ShoppingBag');
+    setFormType(type);
+    setShowForm(true);
+  };
 
   const handleOpenEdit = (category: Category) => {
-    setEditCategory(category)
-    setFormName(category.name)
-    setFormIcon(category.icon ?? (category.type === 'inflow' ? 'Wallet' : 'ShoppingBag'))
-    setFormType(category.type)
-    setShowForm(true)
-  }
+    setEditCategory(category);
+    setFormName(category.name);
+    setFormIcon(category.icon ?? (category.type === 'inflow' ? 'Wallet' : 'ShoppingBag'));
+    setFormType(category.type);
+    setShowForm(true);
+  };
 
   const handleSave = async () => {
-    if (!formName.trim()) return
+    if (!formName.trim()) return;
     
     if (editCategory) {
       await updateCategory.mutateAsync({
@@ -64,172 +68,266 @@ export function CategoriesPage() {
         name: formName.trim(),
         icon: formIcon.trim() || undefined,
         type: formType,
-      })
+      });
     } else {
       await createCategory.mutateAsync({
         name: formName.trim(),
         icon: formIcon.trim() || undefined,
         type: formType,
-      })
+      });
     }
-    setShowForm(false)
-  }
+    setShowForm(false);
+    setFormName('');
+  };
 
   const handleDelete = async (id: string) => {
     if (confirm('Yakin ingin menghapus kategori ini? Transaksi yang menggunakan kategori ini mungkin akan terpengaruh.')) {
       try {
-        await deleteCategory.mutateAsync(id)
+        await deleteCategory.mutateAsync(id);
       } catch (error: any) {
         if (error?.code === '23503') {
-          alert('Tidak dapat menghapus kategori ini karena sedang digunakan oleh transaksi atau budget. Silakan ubah atau hapus transaksi/budget terkait terlebih dahulu.')
+          alert('Tidak dapat menghapus kategori ini karena sedang digunakan oleh transaksi atau budget. Silakan ubah atau hapus transaksi/budget terkait terlebih dahulu.');
         } else {
-          alert(error?.message || 'Terjadi kesalahan saat menghapus kategori.')
+          alert(error?.message || 'Terjadi kesalahan saat menghapus kategori.');
         }
       }
     }
-  }
+  };
 
   const renderCategoryList = (list: Category[], type: 'inflow' | 'outflow') => {
     if (isLoading) {
-      return <div className="space-y-2">{[1, 2, 3].map(i => <Skeleton key={i} className="h-16 w-full rounded-lg" />)}</div>
+      return (
+        <div className="grid gap-4 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4">
+          {[1, 2, 3, 4, 5, 6, 7, 8].map((i) => (
+            <div key={i} className="h-20 w-full bg-canvas animate-pulse rounded-[16px] border-2 border-ink/10" />
+          ))}
+        </div>
+      );
     }
     
     if (list.length === 0) {
       return (
-        <div className="text-center py-12 bg-muted/30 rounded-lg border border-dashed">
-          <Tags className="h-8 w-8 mx-auto text-muted-foreground mb-3 opacity-50" />
-          <p className="text-sm font-medium text-muted-foreground">Belum ada kategori</p>
-          <Button variant="link" size="sm" onClick={() => handleOpenAdd(type)} className="mt-1">
-            Tambah kategori pertama →
-          </Button>
+        <div className="text-center py-16 px-4 rounded-[18px] bg-canvas border-2 border-dashed border-ink/20 flex flex-col items-center justify-center">
+          <div className="w-14 h-14 rounded-[14px] bg-canary border-2 border-ink shadow-hard-sm flex items-center justify-center mb-3">
+            <Tags className="h-7 w-7 text-ink" strokeWidth={2.5} />
+          </div>
+          <p className="font-archivo-black text-base text-ink">Belum Ada Kategori {type === 'outflow' ? 'Pengeluaran' : 'Pemasukan'}</p>
+          <p className="font-space-grotesk text-xs text-ink/70 mt-0.5 mb-5">Tambahkan kategori untuk mengelompokkan catatan transaksi Anda.</p>
+          <button
+            onClick={() => handleOpenAdd(type)}
+            className="btn-neubrutalism bg-hot-pink text-white px-5 py-2 text-xs font-space-grotesk flex items-center gap-1.5"
+          >
+            <Plus className="h-4 w-4" strokeWidth={3} />
+            Tambah Kategori {type === 'outflow' ? 'Pengeluaran' : 'Pemasukan'}
+          </button>
         </div>
-      )
+      );
     }
 
     return (
-      <div className="grid gap-3 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4">
-        {list.map(category => (
-          <DashboardCard key={category.id} className="group hover:border-slate-300 transition-colors cursor-pointer bg-white">
-            <DashboardCardContent className="p-4 flex items-center justify-between">
-              <div className="flex items-center gap-3 overflow-hidden">
-                <div className={`h-10 w-10 rounded-full flex items-center justify-center shrink-0 ${
-                  category.type === 'inflow' ? 'bg-[#f0fbf7] text-[#4cb791]' : 'bg-[#fff5f5] text-[#e65c5c]'
-                }`}>
-                  <CategoryIcon icon={category.icon} className="h-5 w-5" />
-                </div>
-                <p className="font-semibold text-sm truncate text-slate-800" title={category.name}>{category.name}</p>
+      <div className="grid gap-4 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4">
+        {list.map((category) => (
+          <div
+            key={category.id}
+            className="card-neubrutalism bg-white p-4 flex items-center justify-between group hover:-translate-y-1 transition-transform"
+          >
+            <div className="flex items-center gap-3 min-w-0">
+              <div
+                className={cn(
+                  'w-11 h-11 rounded-[14px] border-2 border-ink shadow-hard-sm flex items-center justify-center shrink-0 text-ink',
+                  category.type === 'inflow' ? 'bg-mint' : 'bg-coral'
+                )}
+              >
+                <CategoryIcon icon={category.icon} defaultEmoji="📦" className="h-5 w-5 text-ink" />
               </div>
-              <div className="flex items-center opacity-0 group-hover:opacity-100 transition-opacity gap-1">
-                <Button variant="ghost" size="icon" className="h-8 w-8 text-slate-400 hover:text-slate-700 hover:bg-slate-100 rounded-full" onClick={() => handleOpenEdit(category)}>
-                  <Pencil className="h-4 w-4" />
-                </Button>
-                <Button variant="ghost" size="icon" className="h-8 w-8 text-slate-400 hover:text-red-600 hover:bg-red-50 rounded-full" onClick={() => handleDelete(category.id)}>
-                  <Trash2 className="h-4 w-4" />
-                </Button>
+              <div className="min-w-0">
+                <p className="font-archivo-black text-sm text-ink truncate" title={category.name}>
+                  {category.name}
+                </p>
+                <span className="font-space-mono text-[10px] font-bold text-ink/60 capitalize">
+                  {category.type === 'inflow' ? 'Pemasukan' : 'Pengeluaran'}
+                </span>
               </div>
-            </DashboardCardContent>
-          </DashboardCard>
+            </div>
+
+            <div className="flex items-center gap-1 shrink-0 opacity-80 group-hover:opacity-100 transition-opacity">
+              <button
+                className="w-7 h-7 rounded-full border border-ink hover:bg-canvas flex items-center justify-center text-ink transition-colors cursor-pointer shadow-[1px_1px_0px_0px_#111]"
+                onClick={() => handleOpenEdit(category)}
+                title="Edit Kategori"
+              >
+                <Pencil className="h-3.5 w-3.5" strokeWidth={2.5} />
+              </button>
+              <button
+                className="w-7 h-7 rounded-full border border-ink hover:bg-coral hover:text-white flex items-center justify-center text-ink transition-colors cursor-pointer shadow-[1px_1px_0px_0px_#111]"
+                onClick={() => handleDelete(category.id)}
+                title="Hapus Kategori"
+              >
+                <Trash2 className="h-3.5 w-3.5" strokeWidth={2.5} />
+              </button>
+            </div>
+          </div>
         ))}
       </div>
-    )
-  }
+    );
+  };
 
   return (
-    <div className="flex flex-col min-h-svh">
-
-
-      <main className="flex-1 p-6 md:p-8 max-w-7xl mx-auto w-full space-y-6">
-      <DashboardHeader title="Manajemen Kategori" />
-        <div className="flex items-center justify-between">
-          <div>
-            <h2 className="text-2xl font-bold">Kategori Transaksi</h2>
-            <p className="text-sm text-slate-500 mt-1">Kelola kategori untuk pemasukan dan pengeluaran Anda.</p>
+    <div className="space-y-8 pb-12 max-w-7xl mx-auto w-full">
+      {/* 1. TOP KPI SUMMARY CARDS */}
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-5">
+        <div className="card-neubrutalism bg-white p-5 flex items-center gap-4 group hover:-translate-y-1 transition-transform">
+          <div className="w-12 h-12 rounded-[14px] bg-coral border-2 border-ink shadow-hard-sm flex items-center justify-center shrink-0">
+            <ArrowDownRight className="h-6 w-6 text-ink" strokeWidth={2.5} />
           </div>
-          <Button onClick={() => handleOpenAdd(activeTab)} className="gap-2 bg-[#8ab4f8] hover:bg-[#739ce3] text-white rounded-full px-5 shadow-none h-9">
-            <Plus className="h-4 w-4" /> Tambah Kategori
-          </Button>
+          <div className="min-w-0">
+            <p className="font-space-grotesk font-bold text-xs uppercase tracking-wider text-ink/70">Kategori Pengeluaran</p>
+            <p className="font-archivo-black text-2xl text-ink tracking-tight truncate mt-0.5">
+              {outflowCategories.length} Kategori
+            </p>
+          </div>
         </div>
 
-        <Tabs value={activeTab} onValueChange={(val) => setActiveTab(val as 'inflow' | 'outflow')} className="w-full">
-          <TabsList className="mb-4">
-            <TabsTrigger value="outflow" className="px-6">Pengeluaran ({outflowCategories.length})</TabsTrigger>
-            <TabsTrigger value="inflow" className="px-6">Pemasukan ({inflowCategories.length})</TabsTrigger>
-          </TabsList>
-          <TabsContent value="outflow" className="mt-0">
-            {renderCategoryList(outflowCategories, 'outflow')}
-          </TabsContent>
-          <TabsContent value="inflow" className="mt-0">
-            {renderCategoryList(inflowCategories, 'inflow')}
-          </TabsContent>
-        </Tabs>
-      </main>
+        <div className="card-neubrutalism bg-white p-5 flex items-center gap-4 group hover:-translate-y-1 transition-transform">
+          <div className="w-12 h-12 rounded-[14px] bg-mint border-2 border-ink shadow-hard-sm flex items-center justify-center shrink-0">
+            <ArrowUpRight className="h-6 w-6 text-ink" strokeWidth={2.5} />
+          </div>
+          <div className="min-w-0">
+            <p className="font-space-grotesk font-bold text-xs uppercase tracking-wider text-ink/70">Kategori Pemasukan</p>
+            <p className="font-archivo-black text-2xl text-ink tracking-tight truncate mt-0.5">
+              {inflowCategories.length} Kategori
+            </p>
+          </div>
+        </div>
 
+        <div className="card-neubrutalism bg-canary p-5 flex items-center gap-4 group hover:-translate-y-1 transition-transform">
+          <div className="w-12 h-12 rounded-[14px] bg-white border-2 border-ink shadow-hard-sm flex items-center justify-center shrink-0">
+            <Tags className="h-6 w-6 text-ink" strokeWidth={2.5} />
+          </div>
+          <div className="min-w-0">
+            <p className="font-space-grotesk font-bold text-xs uppercase tracking-wider text-ink/70">Total Semua Kategori</p>
+            <p className="font-archivo-black text-2xl text-ink tracking-tight truncate mt-0.5">
+              {categories.length} Kategori
+            </p>
+          </div>
+        </div>
+      </div>
+
+      {/* 2. CATEGORIES TABS & LIST */}
+      <Tabs value={activeTab} onValueChange={(val) => setActiveTab(val as 'inflow' | 'outflow')} className="w-full space-y-6">
+        <div className="flex items-center justify-start">
+          <TabsList id="tab-categories-list">
+            <TabsTrigger value="outflow" id="tab-outflow-categories">
+              Pengeluaran ({outflowCategories.length})
+            </TabsTrigger>
+            <TabsTrigger value="inflow" id="tab-inflow-categories">
+              Pemasukan ({inflowCategories.length})
+            </TabsTrigger>
+          </TabsList>
+        </div>
+
+        <TabsContent value="outflow" className="mt-0">
+          {renderCategoryList(outflowCategories, 'outflow')}
+        </TabsContent>
+        <TabsContent value="inflow" className="mt-0">
+          {renderCategoryList(inflowCategories, 'inflow')}
+        </TabsContent>
+      </Tabs>
+
+      {/* 3. ADD / EDIT CATEGORY DIALOG */}
       <Dialog open={showForm} onOpenChange={setShowForm}>
-        <DialogContent className="max-w-md">
+        <DialogContent className="max-w-md" id="category-form-dialog">
           <DialogHeader>
             <DialogTitle>{editCategory ? 'Edit Kategori' : 'Tambah Kategori'}</DialogTitle>
             <DialogDescription>
-              Tentukan tipe, nama, dan ikon untuk kategori.
+              Tentukan tipe alokasi, nama kategori, dan ikon representatif.
             </DialogDescription>
           </DialogHeader>
           <div className="space-y-4 py-2">
             <div className="space-y-1.5">
-              <Label>Tipe Kategori</Label>
-              <div className="grid grid-cols-2 gap-2">
-                <Button
+              <Label className="text-xs font-space-grotesk font-bold uppercase tracking-wider text-ink">Tipe Kategori</Label>
+              <div className="grid grid-cols-2 gap-3">
+                <button
                   type="button"
-                  variant={formType === 'outflow' ? 'default' : 'outline'}
-                  className={formType === 'outflow' ? 'bg-[#e65c5c] text-white hover:bg-[#d44c4c]' : ''}
+                  className={cn(
+                    'h-10 rounded-[12px] border-2 border-ink font-space-grotesk font-bold text-xs flex items-center justify-center gap-1.5 transition-all shadow-[2px_2px_0px_0px_#111] cursor-pointer',
+                    formType === 'outflow' ? 'bg-coral text-ink' : 'bg-white text-ink/70 hover:bg-canvas'
+                  )}
                   onClick={() => setFormType('outflow')}
                 >
+                  <ArrowDownRight className="h-4 w-4" strokeWidth={2.5} />
                   Pengeluaran
-                </Button>
-                <Button
+                </button>
+                <button
                   type="button"
-                  variant={formType === 'inflow' ? 'default' : 'outline'}
-                  className={formType === 'inflow' ? 'bg-[#4cb791] text-white hover:bg-[#3da37e]' : ''}
+                  className={cn(
+                    'h-10 rounded-[12px] border-2 border-ink font-space-grotesk font-bold text-xs flex items-center justify-center gap-1.5 transition-all shadow-[2px_2px_0px_0px_#111] cursor-pointer',
+                    formType === 'inflow' ? 'bg-mint text-ink' : 'bg-white text-ink/70 hover:bg-canvas'
+                  )}
                   onClick={() => setFormType('inflow')}
                 >
+                  <ArrowUpRight className="h-4 w-4" strokeWidth={2.5} />
                   Pemasukan
-                </Button>
+                </button>
               </div>
             </div>
 
             <div className="space-y-2">
-              <Label>Ikon Kategori</Label>
-              <div className="grid grid-cols-6 gap-2 max-h-48 overflow-y-auto p-1 border rounded-md">
-                {AVAILABLE_ICONS.map(iconName => (
-                  <Button
-                    key={iconName}
-                    type="button"
-                    variant={formIcon === iconName ? 'default' : 'ghost'}
-                    size="icon"
-                    className={`rounded-md w-full h-10 ${formIcon === iconName ? 'bg-slate-800 text-white hover:bg-slate-700' : 'text-slate-500 hover:bg-slate-100'}`}
-                    onClick={() => setFormIcon(iconName)}
-                  >
-                    <CategoryIcon icon={iconName} className="h-5 w-5" />
-                  </Button>
-                ))}
+              <Label className="text-xs font-space-grotesk font-bold uppercase tracking-wider text-ink">Ikon Kategori</Label>
+              <div className="grid grid-cols-6 gap-2 max-h-48 overflow-y-auto p-2 bg-canvas rounded-[14px] border-2 border-ink shadow-hard-sm">
+                {AVAILABLE_ICONS.map((iconName) => {
+                  const isSelected = formIcon === iconName;
+                  return (
+                    <button
+                      key={iconName}
+                      type="button"
+                      className={cn(
+                        'w-full h-10 rounded-[10px] border-2 border-ink flex items-center justify-center transition-all cursor-pointer shadow-[1px_1px_0px_0px_#111]',
+                        isSelected ? 'bg-canary scale-105 ring-2 ring-ink' : 'bg-white hover:bg-canvas text-ink'
+                      )}
+                      onClick={() => setFormIcon(iconName)}
+                    >
+                      <CategoryIcon icon={iconName} className="h-5 w-5 text-ink" />
+                    </button>
+                  );
+                })}
               </div>
             </div>
+
             <div className="space-y-1.5">
-              <Label htmlFor="category-name">Nama Kategori</Label>
-              <Input 
-                id="category-name" 
-                value={formName} 
-                onChange={e => setFormName(e.target.value)} 
-                placeholder="Misal: Makanan, Gaji, Transportasi" 
+              <Label htmlFor="category-name" className="text-xs font-space-grotesk font-bold uppercase tracking-wider text-ink">
+                Nama Kategori
+              </Label>
+              <Input
+                id="category-name"
+                value={formName}
+                onChange={(e) => setFormName(e.target.value)}
+                placeholder="Misal: Makanan, Gaji, Transportasi, Hiburan"
+                className="font-space-grotesk text-sm font-medium"
               />
             </div>
+
+            <DialogFooter className="pt-4 flex flex-row items-center justify-end gap-3">
+              <button
+                type="button"
+                className="btn-neubrutalism bg-white text-ink px-5 py-2 text-xs font-space-grotesk flex-1 sm:flex-none"
+                onClick={() => setShowForm(false)}
+              >
+                Batal
+              </button>
+              <button
+                id="btn-save-category"
+                className="btn-neubrutalism bg-hot-pink text-white px-5 py-2 text-xs font-space-grotesk flex-1 sm:flex-none disabled:opacity-50 disabled:cursor-not-allowed"
+                disabled={!formName.trim() || createCategory.isPending || updateCategory.isPending}
+                onClick={handleSave}
+              >
+                {createCategory.isPending || updateCategory.isPending ? 'Menyimpan…' : 'Simpan Kategori'}
+              </button>
+            </DialogFooter>
           </div>
-          <DialogFooter>
-            <Button variant="outline" onClick={() => setShowForm(false)}>Batal</Button>
-            <Button onClick={handleSave} disabled={!formName.trim() || createCategory.isPending || updateCategory.isPending}>
-              {createCategory.isPending || updateCategory.isPending ? 'Menyimpan...' : 'Simpan'}
-            </Button>
-          </DialogFooter>
         </DialogContent>
       </Dialog>
     </div>
-  )
+  );
 }
+
