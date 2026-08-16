@@ -1,11 +1,11 @@
 "use client";
 import { useState, useMemo } from 'react';
-import { Plus, ArrowLeftRight, TrendingUp, TrendingDown, ChevronLeft, ChevronRight, Filter, RotateCcw } from 'lucide-react';
+import { Plus, ArrowLeftRight, TrendingUp, TrendingDown, Filter, RotateCcw } from 'lucide-react';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Input } from '@/components/ui/input';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
-import { formatRupiah, formatDateShort, formatDate, cn } from '@/lib/utils';
-import { format, addDays, subDays } from 'date-fns';
+import { formatRupiah, formatDateShort, cn } from '@/lib/utils';
+import { format } from 'date-fns';
 import { useTransactions, useDeleteTransaction, useCreateTransaction, useUpdateTransaction } from '@/hooks/useTransactions';
 import { useAccounts } from '@/hooks/useAccounts';
 import { useCategories } from '@/hooks/useCategories';

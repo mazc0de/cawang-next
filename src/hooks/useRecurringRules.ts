@@ -176,7 +176,7 @@ export function useApproveRecurringRule() {
 
       // 2. Calculate next due date
       const currentDue = new Date(rule.next_due_date)
-      let nextDue = new Date(currentDue)
+      const nextDue = new Date(currentDue)
 
       switch (rule.frequency) {
         case 'daily':

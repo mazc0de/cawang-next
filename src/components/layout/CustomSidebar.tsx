@@ -1,10 +1,8 @@
 'use client';
-import { useState } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { LayoutDashboard, Wallet, ArrowLeftRight, CalendarDays, PieChart, Settings, TrendingUp, Folder, RefreshCw, ChevronRight, Zap, PiggyBank } from 'lucide-react';
+import { LayoutDashboard, Wallet, ArrowLeftRight, CalendarDays, PieChart, Settings, TrendingUp, Folder, RefreshCw, PiggyBank } from 'lucide-react';
 import { cn } from '@/lib/utils';
-import { useAuth } from '@/contexts/AuthContext';
 
 const mainNavItems = [
     { href: '/dashboard', label: 'Overview', icon: LayoutDashboard },
@@ -21,14 +19,6 @@ const secondaryNavItems = [{ href: '/dashboard/settings', label: 'Settings', ico
 
 export function CustomSidebar() {
     const pathname = usePathname();
-    const { user } = useAuth();
-    const initials =
-        user?.user_metadata?.full_name
-            ?.split(' ')
-            .map((n: string) => n[0])
-            .join('')
-            .toUpperCase()
-            .slice(0, 2) || 'U';
 
     return (
         <div className="flex h-full w-[240px] flex-col border-r-2 border-ink bg-white shrink-0 z-20 overflow-hidden relative">

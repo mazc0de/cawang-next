@@ -25,8 +25,8 @@ export function useBudgets(cycleYear: number, cycleMonth: number) {
       const { data: config } = await supabase.from('financial_cycle_config').select('start_day').eq('user_id', user.id).single()
       const startDay = config?.start_day || 1
       
-      let startDate = new Date(cycleYear, cycleMonth - 1, startDay)
-      let endDate = new Date(startDate)
+      const startDate = new Date(cycleYear, cycleMonth - 1, startDay)
+      const endDate = new Date(startDate)
       endDate.setMonth(endDate.getMonth() + 1)
       endDate.setDate(endDate.getDate() - 1)
       

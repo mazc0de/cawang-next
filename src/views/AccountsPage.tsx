@@ -1,6 +1,6 @@
 "use client";
 import { useState, useMemo } from 'react';
-import { Plus, Wallet, Landmark, Smartphone, Banknote } from 'lucide-react';
+import { Plus, Wallet } from 'lucide-react';
 import { formatRupiah } from '@/lib/utils';
 import { useAccounts, useCreateAccount, useUpdateAccount, useDeleteAccount } from '@/hooks/useAccounts';
 import type { AccountWithBalance } from '@/hooks/useAccounts';

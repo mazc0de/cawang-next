@@ -39,7 +39,7 @@ export function useTransactions(filters?: TransactionFilters) {
       // Transform tags from junction table relation
       return (data || []).map((tx: any) => {
         const tags = tx.transaction_tags?.map((tt: any) => tt.tag) || []
-        const { transaction_tags, ...rest } = tx
+        const { transaction_tags: _transaction_tags, ...rest } = tx
         return {
           ...rest,
           tags,

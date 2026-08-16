@@ -1,6 +1,6 @@
 "use client";
 import { useState } from 'react';
-import { Plus, Tags, Pencil, Trash2, ArrowDownRight, ArrowUpRight, Check } from 'lucide-react';
+import { Plus, Tags, Pencil, Trash2, ArrowDownRight, ArrowUpRight } from 'lucide-react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';

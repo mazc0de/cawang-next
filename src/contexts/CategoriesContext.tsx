@@ -16,7 +16,7 @@ export function CategoriesProvider({ children }: { children: React.ReactNode }) 
   const [showForm, setShowForm] = useState(false);
   const [editCategory, setEditCategory] = useState<Category | null>(null);
 
-  const openAddModal = (type: 'inflow' | 'outflow' = 'outflow') => {
+  const openAddModal = (_type: 'inflow' | 'outflow' = 'outflow') => {
     setEditCategory(null);
     setShowForm(true);
   };

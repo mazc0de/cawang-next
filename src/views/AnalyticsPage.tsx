@@ -1,9 +1,9 @@
 'use client';
 import { useMemo } from 'react';
-import { BarChart, Bar, LineChart, Line, PieChart, Pie, Cell, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend } from 'recharts';
-import { TrendingUp, TrendingDown, Wallet, PieChart as PieIcon, BarChart3, LineChart as LineIcon, CheckCircle2, AlertTriangle } from 'lucide-react';
+import { BarChart, Bar, LineChart, Line, PieChart, Pie, Cell, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
+import { TrendingUp, TrendingDown, Wallet, CheckCircle2, AlertTriangle } from 'lucide-react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { formatRupiah, getCurrentFinancialCycle, formatDateShort, cn } from '@/lib/utils';
+import { formatRupiah, getCurrentFinancialCycle, cn } from '@/lib/utils';
 import { useFinancialCycleConfig } from '@/hooks/useFinancialCycleConfig';
 import { useDashboardStats } from '@/hooks/useDashboardStats';
 import { useAnalyticsData } from '@/hooks/useAnalyticsData';

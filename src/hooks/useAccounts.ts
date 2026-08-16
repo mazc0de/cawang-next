@@ -34,7 +34,7 @@ export function useAccounts() {
           })
         }
         // Remove transactions array from final object to keep it clean
-        const { transactions, ...rest } = acc
+        const { transactions: _transactions, ...rest } = acc
         return {
           ...rest,
           actual_balance,

@@ -3,9 +3,9 @@ import { useState } from 'react';
 import Link from 'next/link';
 import { format } from 'date-fns';
 
-import { DollarSign, Users, Percent, UserPlus, AlertCircle, Plus, Wallet, TrendingUp, TrendingDown, ArrowDown } from 'lucide-react';
+import { Plus, Wallet, TrendingUp, TrendingDown, ArrowDown } from 'lucide-react';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
-import { formatRupiah, formatDateShort, getCurrentFinancialCycle, cn } from '@/lib/utils';
+import { formatRupiah, getCurrentFinancialCycle, cn } from '@/lib/utils';
 import { useAuth } from '@/contexts/AuthContext';
 import { useFinancialCycleConfig } from '@/hooks/useFinancialCycleConfig';
 import { useDashboardStats } from '@/hooks/useDashboardStats';
@@ -21,7 +21,6 @@ import { useQueryClient } from '@tanstack/react-query';
 export function DashboardPage() {
     const { user } = useAuth();
     const queryClient = useQueryClient();
-    const firstName = user?.user_metadata?.full_name?.split(' ')[0] ?? 'User';
     const [showForm, setShowForm] = useState(false);
     const [editingTransaction, setEditingTransaction] = useState<any>(undefined);
 
@@ -450,16 +449,6 @@ function StatCard({ title, value, sub, icon, color }: { title: string; value: st
                 <div className="font-archivo-black text-2xl text-ink tracking-tight truncate mb-1">{value}</div>
             </div>
             {sub && <div className="font-space-mono text-[10px] text-ink/60 font-medium truncate mt-2">{sub}</div>}
-        </div>
-    );
-}
-
-function LegendRow({ color, label, value }: { color: string; label: string; value: string }) {
-    return (
-        <div className="flex items-center gap-3">
-            <div className={cn('w-4 h-4 rounded-full border-2 border-ink shrink-0 shadow-hard-sm', color)}></div>
-            <span className="font-space-grotesk font-bold text-sm text-ink flex-1">{label}</span>
-            <span className="font-space-mono font-bold text-[13px] text-ink">{value}</span>
         </div>
     );
 }
