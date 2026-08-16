@@ -248,7 +248,7 @@ export function CalendarPage() {
         <div className="lg:col-span-4 space-y-4">
           <div className="card-neubrutalism bg-white p-5 sm:p-6 space-y-4">
             {/* Header Selected Date */}
-            <div className="flex items-center gap-3 border-b-2 border-ink pb-4">
+            <div className="flex items-center gap-3">
               <div className="w-11 h-11 rounded-[14px] bg-lilac border-2 border-ink shadow-hard-sm flex items-center justify-center shrink-0">
                 <CalendarIcon className="h-5 w-5 text-ink" strokeWidth={2.5} />
               </div>
@@ -262,12 +262,12 @@ export function CalendarPage() {
 
             {/* Daily Net Summary */}
             {selectedDate && selectedItems.length > 0 && (
-              <div className="grid grid-cols-2 gap-2.5 pt-1">
-                <div className="p-2.5 rounded-[12px] bg-canvas border-2 border-ink text-center">
+              <div className="grid grid-cols-2 gap-2.5">
+                <div className="p-2.5 rounded-[12px] bg-canvas border-2 border-ink text-center shadow-hard-sm">
                   <span className="font-space-grotesk font-bold text-[10px] uppercase text-ink/70">Total Masuk</span>
                   <p className="font-space-mono font-bold text-xs text-mint mt-0.5">+{formatRupiah(selectedDayTotalInflow, true)}</p>
                 </div>
-                <div className="p-2.5 rounded-[12px] bg-canvas border-2 border-ink text-center">
+                <div className="p-2.5 rounded-[12px] bg-canvas border-2 border-ink text-center shadow-hard-sm">
                   <span className="font-space-grotesk font-bold text-[10px] uppercase text-ink/70">Total Keluar</span>
                   <p className="font-space-mono font-bold text-xs text-coral mt-0.5">-{formatRupiah(selectedDayTotalOutflow, true)}</p>
                 </div>
@@ -275,7 +275,7 @@ export function CalendarPage() {
             )}
 
             {/* Transaction Items List */}
-            <div className="space-y-2.5 max-h-[440px] overflow-y-auto pr-0.5">
+            <div className="space-y-3 max-h-[440px] overflow-y-auto px-1.5 py-1.5 -mx-1.5">
               {selectedDate && selectedItems.length === 0 && (
                 <div className="py-10 text-center rounded-xl bg-canvas border-2 border-dashed border-ink/20">
                   <p className="font-space-grotesk font-bold text-sm text-ink/70">Tidak ada transaksi</p>
