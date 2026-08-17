@@ -1,0 +1,10 @@
+# Ignore all image files in docs
+*.png
+*.jpg
+*.jpeg
+*.gif
+*.webp
+*.svg
+*.bmp
+*.ico
+*.avif

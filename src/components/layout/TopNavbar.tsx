@@ -173,10 +173,10 @@ export function TopNavbar() {
         </div>
 
         {/* Profile button on mobile top row */}
-        <div className="sm:hidden">
+        <div className="sm:hidden p-0.5">
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
-              <button className="flex items-center justify-center h-10 w-10 rounded-full bg-mint border-2 border-ink shadow-hard-sm active:translate-y-0.5 transition-all outline-none cursor-pointer select-none">
+              <button className="flex items-center justify-center h-10 w-10 rounded-full bg-mint border-2 border-ink shadow-hard-sm active:translate-y-0.5 transition-all outline-none cursor-pointer select-none my-0.5 mr-1">
                 <span className="font-bold text-ink text-xs font-space-mono">
                   {initials}
                 </span>
@@ -200,12 +200,12 @@ export function TopNavbar() {
       </div>
 
       {/* Right Controls */}
-      <div className="flex items-center justify-between sm:justify-end w-full sm:w-auto gap-2 sm:gap-4 overflow-x-auto pb-1 sm:pb-0 scrollbar-none">
+      <div className="flex items-center justify-between sm:justify-end w-full sm:w-auto gap-2.5 sm:gap-4 overflow-x-auto sm:overflow-visible py-2 px-1 sm:p-0 scrollbar-none">
         {/* Specific controls for Transactions Page */}
         {isTransactions && (
           <>
             {/* Date Navigator */}
-            <div className="flex items-center gap-1 bg-white rounded-full border-2 border-ink p-1 shadow-hard-sm shrink-0">
+            <div className="flex items-center gap-1 bg-white rounded-full border-2 border-ink p-1 shadow-hard-sm shrink-0 my-0.5">
               <button
                 className="h-7 w-7 sm:h-8 sm:w-8 rounded-full flex items-center justify-center hover:bg-canvas text-ink transition-colors cursor-pointer"
                 onClick={() => setSelectedDate?.((prev) => subDays(prev, 1))}
@@ -231,7 +231,7 @@ export function TopNavbar() {
             {/* Catat Transaksi Button */}
             <button
               id="btn-navbar-add-transaction"
-              className="btn-neubrutalism bg-hot-pink text-white px-3 sm:px-5 py-2 sm:py-2.5 text-xs sm:text-sm font-space-grotesk flex items-center gap-1.5 sm:gap-2 shrink-0"
+              className="btn-neubrutalism bg-hot-pink text-white px-3 sm:px-5 py-2 sm:py-2.5 text-xs sm:text-sm font-space-grotesk flex items-center gap-1.5 sm:gap-2 shrink-0 my-0.5 mr-0.5"
               onClick={() => {
                 setEditingTransaction?.(undefined);
                 setShowForm?.(true);
@@ -334,7 +334,7 @@ export function TopNavbar() {
         )}
 
         {/* Desktop Profile */}
-        <div className="hidden sm:block shrink-0">
+        <div className="hidden sm:block shrink-0 my-0.5 mr-1">
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
               <button className="flex items-center justify-center h-11 w-11 sm:h-12 sm:w-12 rounded-full bg-mint border-2 border-ink shadow-hard-sm hover:shadow-hard-md hover:-translate-y-0.5 transition-all outline-none cursor-pointer select-none">
