@@ -19,11 +19,24 @@ import {
   Sparkles,
 } from "lucide-react";
 import { cn, formatRupiah } from "@/lib/utils";
-import { useTransactions } from "@/hooks/useTransactions";
+import {
+  useTransactions,
+  useCreateTransaction,
+  useUpdateTransaction,
+} from "@/hooks/useTransactions";
+import { useAccounts } from "@/hooks/useAccounts";
+import { useCategories } from "@/hooks/useCategories";
 import { useRecurringRules } from "@/hooks/useRecurringRules";
 import { useFinancialCycleConfig } from "@/hooks/useFinancialCycleConfig";
 import { useCalendarContext } from "@/contexts/CalendarContext";
 import { useTransactionsContext } from "@/contexts/TransactionsContext";
+import { useAuth } from "@/contexts/AuthContext";
+import { useQueryClient } from "@tanstack/react-query";
+import { supabase } from "@/lib/supabase";
+import {
+  TransactionFormDialog,
+  type TransactionFormData,
+} from "@/components/transactions/TransactionFormDialog";
 import {
   Dialog,
   DialogContent,
@@ -34,11 +47,13 @@ import {
 } from "@/components/ui/dialog";
 
 interface CalendarItem {
+  id?: string;
   date: string;
   amount: number;
   type: "inflow" | "outflow";
   is_projection: boolean;
   label: string;
+  raw?: any;
 }
 
 function getTransactionsForDay(date: Date, items: CalendarItem[]) {
@@ -145,19 +160,33 @@ function DayCell({
 }
 
 export function CalendarPage() {
+  const { user } = useAuth();
+  const queryClient = useQueryClient();
   const { data: cycleConfig } = useFinancialCycleConfig();
   const startDay = cycleConfig?.start_day ?? 1;
 
   const calendarContext = useCalendarContext();
   const txContext = useTransactionsContext();
 
+  const { data: accounts = [] } = useAccounts();
+  const { data: categories = [] } = useCategories();
+  const createTransaction = useCreateTransaction();
+  const updateTransaction = useUpdateTransaction();
+
   const [localRefDate] = useState(new Date());
   const [localSelDate, setLocalSelDate] = useState<Date | null>(new Date());
   const [isDetailModalOpen, setIsDetailModalOpen] = useState(false);
+  const [localShowForm, setLocalShowForm] = useState(false);
+  const [localEditingTransaction, setLocalEditingTransaction] = useState<any>(undefined);
 
   const referenceDate = calendarContext?.referenceDate ?? localRefDate;
   const selectedDate = calendarContext?.selectedDate ?? localSelDate;
   const setSelectedDate = calendarContext?.setSelectedDate ?? setLocalSelDate;
+
+  const showForm = txContext?.showForm ?? localShowForm;
+  const setShowForm = txContext?.setShowForm ?? setLocalShowForm;
+  const editingTransaction = txContext?.editingTransaction ?? localEditingTransaction;
+  const setEditingTransaction = txContext?.setEditingTransaction ?? setLocalEditingTransaction;
 
   // Calculate cycle bounds based on referenceDate and startDay
   const year = referenceDate.getFullYear();
@@ -193,11 +222,13 @@ export function CalendarPage() {
     return [
       // Actual transactions
       ...transactions.map((tx) => ({
+        id: tx.id,
         date: tx.date.substring(0, 10),
         amount: tx.amount,
         type: tx.type as "inflow" | "outflow",
         is_projection: false,
         label: tx.notes || (tx as any).category?.name || "Transaksi",
+        raw: tx,
       })),
       // Projected from active Recurring Rules
       ...recurringRules
@@ -208,6 +239,7 @@ export function CalendarPage() {
             r.next_due_date <= endStr,
         )
         .map((r) => ({
+          id: r.id,
           date: r.next_due_date,
           amount: r.amount,
           type: r.type as "inflow" | "outflow",
@@ -239,11 +271,113 @@ export function CalendarPage() {
   };
 
   const handleCreateTxForDate = () => {
-    if (selectedDate && txContext) {
-      txContext.setSelectedDate?.(selectedDate);
-      txContext.setEditingTransaction?.(undefined);
-      txContext.setShowForm?.(true);
+    if (selectedDate) {
+      if (txContext) {
+        txContext.setSelectedDate?.(selectedDate);
+        txContext.setEditingTransaction?.(undefined);
+        txContext.setShowForm?.(true);
+      } else {
+        setLocalEditingTransaction(undefined);
+        setLocalShowForm(true);
+      }
       setIsDetailModalOpen(false);
+    }
+  };
+
+  const handleTransactionSubmit = async (data?: TransactionFormData) => {
+    if (!data || !user) return;
+
+    if (editingTransaction) {
+      if (editingTransaction.transfer_pair_id) {
+        await updateTransaction.mutateAsync({
+          id: editingTransaction.id,
+          amount: data.amount,
+          date: data.date,
+          notes: data.notes,
+        });
+        await updateTransaction.mutateAsync({
+          id: editingTransaction.transfer_pair_id,
+          amount: data.amount,
+          date: data.date,
+        });
+        queryClient.invalidateQueries({ queryKey: ["transactions", user.id] });
+        queryClient.invalidateQueries({ queryKey: ["accounts", user.id] });
+      } else {
+        await updateTransaction.mutateAsync({
+          id: editingTransaction.id,
+          account_id: data.account_id,
+          category_id: data.category_id!,
+          amount: data.amount,
+          date: data.date,
+          notes: data.notes,
+        });
+      }
+      setEditingTransaction(undefined);
+      return;
+    }
+
+    if (data.type === "transfer") {
+      const { data: tx1 } = await supabase
+        .from("transactions")
+        .insert([
+          {
+            user_id: user.id,
+            account_id: data.account_id,
+            category_id:
+              categories.find((c) => c.type === "outflow")?.id ?? "",
+            amount: data.amount,
+            type: "outflow",
+            date: data.date,
+            notes:
+              data.notes ||
+              `Transfer ke ${accounts.find((a) => a.id === data.to_account_id)?.name}`,
+            is_adjustment: false,
+          },
+        ])
+        .select()
+        .single();
+
+      if (!tx1) return;
+
+      const { data: tx2 } = await supabase
+        .from("transactions")
+        .insert([
+          {
+            user_id: user.id,
+            account_id: data.to_account_id!,
+            category_id:
+              categories.find((c) => c.type === "inflow")?.id ?? "",
+            amount: data.amount,
+            type: "inflow",
+            date: data.date,
+            notes:
+              data.notes ||
+              `Transfer dari ${accounts.find((a) => a.id === data.account_id)?.name}`,
+            is_adjustment: false,
+            transfer_pair_id: tx1.id,
+          },
+        ])
+        .select()
+        .single();
+
+      if (tx2) {
+        await supabase
+          .from("transactions")
+          .update({ transfer_pair_id: tx2.id })
+          .eq("id", tx1.id);
+      }
+
+      queryClient.invalidateQueries({ queryKey: ["transactions", user.id] });
+      queryClient.invalidateQueries({ queryKey: ["accounts", user.id] });
+    } else {
+      await createTransaction.mutateAsync({
+        account_id: data.account_id,
+        category_id: data.category_id!,
+        amount: data.amount,
+        type: data.type,
+        date: data.date,
+        notes: data.notes,
+      });
     }
   };
 
@@ -413,9 +547,18 @@ export function CalendarPage() {
               selectedItems.map((item, i) => (
                 <div
                   key={i}
+                  onClick={() => {
+                    if (!item.is_projection && item.raw) {
+                      setEditingTransaction(item.raw);
+                      setShowForm(true);
+                      setIsDetailModalOpen(false);
+                    }
+                  }}
                   className={cn(
                     "p-3.5 rounded-[14px] bg-white border-2 border-ink shadow-hard-sm flex items-center justify-between gap-3 group hover:-translate-y-0.5 transition-transform",
-                    item.is_projection && "border-dashed bg-canvas/40",
+                    item.is_projection
+                      ? "border-dashed bg-canvas/40"
+                      : "cursor-pointer hover:bg-canvas/50",
                   )}
                 >
                   <div className="flex items-center gap-3 min-w-0">
@@ -486,6 +629,24 @@ export function CalendarPage() {
           </DialogFooter>
         </DialogContent>
       </Dialog>
+
+      {/* Create/Edit Transaction Dialog */}
+      <TransactionFormDialog
+        open={showForm}
+        onOpenChange={(open) => {
+          setShowForm(open);
+          if (!open) setTimeout(() => setEditingTransaction(undefined), 300);
+        }}
+        transaction={editingTransaction}
+        defaultDate={
+          selectedDate
+            ? format(selectedDate, "yyyy-MM-dd")
+            : format(new Date(), "yyyy-MM-dd")
+        }
+        accounts={accounts}
+        categories={categories}
+        onSuccess={handleTransactionSubmit}
+      />
     </div>
   );
 }

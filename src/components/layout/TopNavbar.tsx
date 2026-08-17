@@ -5,6 +5,8 @@ import {
   ChevronLeft,
   ChevronRight,
   Sparkles,
+  PanelLeftClose,
+  PanelLeftOpen,
 } from "lucide-react";
 import {
   DropdownMenu,
@@ -12,6 +14,11 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
 import { useAuth } from "@/contexts/AuthContext";
 import { usePathname } from "next/navigation";
 import { useFinancialCycleConfig } from "@/hooks/useFinancialCycleConfig";
@@ -25,6 +32,7 @@ import { useBudgetContext } from "@/contexts/BudgetContext";
 import { useCalendarContext } from "@/contexts/CalendarContext";
 import { useRecurringContext } from "@/contexts/RecurringContext";
 import { useCategoriesContext } from "@/contexts/CategoriesContext";
+import { useSidebarContext } from "@/contexts/SidebarContext";
 import { addDays, subDays, addMonths, subMonths } from "date-fns";
 
 export function TopNavbar() {
@@ -36,6 +44,10 @@ export function TopNavbar() {
   const isCalendar = pathname === "/dashboard/calendar";
   const isRecurring = pathname === "/dashboard/recurring";
   const isCategories = pathname === "/dashboard/categories";
+
+  const sidebarContext = useSidebarContext();
+  const isSidebarCollapsed = sidebarContext?.isCollapsed ?? false;
+  const toggleSidebar = sidebarContext?.toggleSidebar;
 
   const txContext = useTransactionsContext();
   const selectedDate = txContext?.selectedDate ?? new Date();
@@ -78,10 +90,36 @@ export function TopNavbar() {
   return (
     <header className="flex h-24 w-full items-center justify-between bg-transparent px-6 lg:px-10 mt-2 shrink-0">
       {/* Page Title & Subtitle */}
-      <div className="flex flex-col gap-1">
-        <h2 className="font-archivo-black text-4xl text-ink leading-none">
-          {pageTitle}
-        </h2>
+      <div className="flex items-center gap-3.5">
+        {toggleSidebar && (
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <button
+                id="btn-navbar-toggle-sidebar"
+                onClick={toggleSidebar}
+                type="button"
+                className="h-10 w-10 rounded-xl bg-white border-2 border-ink shadow-[2px_2px_0px_0px_#111111] hover:bg-canary hover:translate-x-[-1px] hover:translate-y-[-1px] hover:shadow-hard-sm active:translate-x-[1px] active:translate-y-[1px] active:shadow-none flex items-center justify-center text-ink transition-all cursor-pointer shrink-0"
+              >
+                {isSidebarCollapsed ? (
+                  <PanelLeftOpen className="h-5 w-5" strokeWidth={2.5} />
+                ) : (
+                  <PanelLeftClose className="h-5 w-5" strokeWidth={2.5} />
+                )}
+              </button>
+            </TooltipTrigger>
+            <TooltipContent
+              side="bottom"
+              className="font-space-grotesk font-bold text-xs bg-ink text-canvas border-2 border-ink shadow-hard-sm px-3 py-1.5 rounded-lg z-50"
+            >
+              {isSidebarCollapsed ? "Buka Sidebar" : "Tutup Sidebar"}
+            </TooltipContent>
+          </Tooltip>
+        )}
+
+        <div className="flex flex-col gap-1">
+          <h2 className="font-archivo-black text-3xl sm:text-4xl text-ink leading-none">
+            {pageTitle}
+          </h2>
         {isOverview && (
           <p className="text-sm font-space-grotesk text-ink/70 font-normal">
             Financial Cycle: <span className="font-semibold">{cycleRange}</span>
@@ -117,6 +155,7 @@ export function TopNavbar() {
             Kelola profil akun & konfigurasi siklus finansial
           </p>
         )}
+        </div>
       </div>
 
       {/* Right Controls */}
