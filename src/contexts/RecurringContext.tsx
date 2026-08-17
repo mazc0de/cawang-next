@@ -1,5 +1,5 @@
-'use client';
-import React, { createContext, useContext, useState } from 'react';
+"use client";
+import React, { createContext, useContext, useState } from "react";
 
 interface RecurringContextType {
   showForm: boolean;
@@ -7,7 +7,9 @@ interface RecurringContextType {
   openAddModal: () => void;
 }
 
-const RecurringContext = createContext<RecurringContextType | undefined>(undefined);
+const RecurringContext = createContext<RecurringContextType | undefined>(
+  undefined,
+);
 
 export function RecurringProvider({ children }: { children: React.ReactNode }) {
   const [showForm, setShowForm] = useState(false);

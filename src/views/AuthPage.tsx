@@ -1,17 +1,26 @@
 "use client";
-import { useState } from 'react';
-import { Navigate } from '@/components/Navigate';
-import { supabase } from '@/lib/supabase';
-import { useAuth } from '@/contexts/AuthContext';
-import { Input } from '@/components/ui/input';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { TrendingUp, Shield, BarChart3, Loader2, ArrowRight, Sparkles, RefreshCw, KeyRound } from 'lucide-react';
+import { useState } from "react";
+import { Navigate } from "@/components/Navigate";
+import { supabase } from "@/lib/supabase";
+import { useAuth } from "@/contexts/AuthContext";
+import { Input } from "@/components/ui/input";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import {
+  TrendingUp,
+  Shield,
+  BarChart3,
+  Loader2,
+  ArrowRight,
+  Sparkles,
+  RefreshCw,
+  KeyRound,
+} from "lucide-react";
 
 export function AuthPage() {
   const { user, loading } = useAuth();
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
-  const [fullName, setFullName] = useState('');
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [fullName, setFullName] = useState("");
   const [authLoading, setAuthLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [message, setMessage] = useState<string | null>(null);
@@ -33,7 +42,10 @@ export function AuthPage() {
     e.preventDefault();
     setAuthLoading(true);
     setError(null);
-    const { error } = await supabase.auth.signInWithPassword({ email, password });
+    const { error } = await supabase.auth.signInWithPassword({
+      email,
+      password,
+    });
     if (error) setError(error.message);
     setAuthLoading(false);
   };
@@ -51,9 +63,9 @@ export function AuthPage() {
       setError(error.message);
     } else {
       if (data.session) {
-        setMessage('Pendaftaran berhasil! Mengalihkan ke dashboard...');
+        setMessage("Pendaftaran berhasil! Mengalihkan ke dashboard...");
       } else {
-        setMessage('Cek email Anda untuk konfirmasi pendaftaran.');
+        setMessage("Cek email Anda untuk konfirmasi pendaftaran.");
       }
     }
     setAuthLoading(false);
@@ -70,7 +82,7 @@ export function AuthPage() {
     if (error) {
       setError(error.message);
     } else {
-      setMessage('Instruksi reset password telah dikirim ke email Anda.');
+      setMessage("Instruksi reset password telah dikirim ke email Anda.");
     }
     setAuthLoading(false);
   };
@@ -86,8 +98,12 @@ export function AuthPage() {
               <TrendingUp className="h-6 w-6 text-ink" strokeWidth={2.5} />
             </div>
             <div>
-              <span className="font-archivo-black text-3xl tracking-tight text-ink block leading-tight">CAWANG</span>
-              <p className="font-space-grotesk text-xs font-bold text-ink/70 uppercase tracking-wider">Catat Keuangan</p>
+              <span className="font-archivo-black text-3xl tracking-tight text-ink block leading-tight">
+                CAWANG
+              </span>
+              <p className="font-space-grotesk text-xs font-bold text-ink/70 uppercase tracking-wider">
+                Catat Keuangan
+              </p>
             </div>
           </div>
         </div>
@@ -100,10 +116,13 @@ export function AuthPage() {
               Platform Keuangan Personal Modern
             </div>
             <h1 className="font-archivo-black text-4xl xl:text-5xl text-ink leading-[1.15] mb-4">
-              Kendalikan keuangan<br />dengan percaya diri.
+              Kendalikan keuangan
+              <br />
+              dengan percaya diri.
             </h1>
             <p className="font-space-grotesk text-ink/80 text-base max-w-lg leading-relaxed font-medium">
-              Dashboard keuangan personal yang membantu Anda mencatat transaksi, merencanakan budget, dan memahami arus kas — dalam satu tempat.
+              Dashboard keuangan personal yang membantu Anda mencatat transaksi,
+              merencanakan budget, dan memahami arus kas — dalam satu tempat.
             </p>
           </div>
 
@@ -113,24 +132,36 @@ export function AuthPage() {
               <div className="w-10 h-10 rounded-[12px] bg-mint border-2 border-ink shadow-hard-sm flex items-center justify-center">
                 <BarChart3 className="h-5 w-5 text-ink" strokeWidth={2.5} />
               </div>
-              <p className="font-archivo-black text-sm text-ink">Analytics Real-Time</p>
-              <p className="font-space-grotesk text-xs text-ink/70">Visualisasi arus kas & rincian kategori cycle bulanan.</p>
+              <p className="font-archivo-black text-sm text-ink">
+                Analytics Real-Time
+              </p>
+              <p className="font-space-grotesk text-xs text-ink/70">
+                Visualisasi arus kas & rincian kategori cycle bulanan.
+              </p>
             </div>
 
             <div className="card-neubrutalism bg-white p-4 space-y-2 hover:-translate-y-1 transition-transform">
               <div className="w-10 h-10 rounded-[12px] bg-canary border-2 border-ink shadow-hard-sm flex items-center justify-center">
                 <Shield className="h-5 w-5 text-ink" strokeWidth={2.5} />
               </div>
-              <p className="font-archivo-black text-sm text-ink">Privasi Terjaga</p>
-              <p className="font-space-grotesk text-xs text-ink/70">Data Anda terenkripsi aman menggunakan Supabase Auth.</p>
+              <p className="font-archivo-black text-sm text-ink">
+                Privasi Terjaga
+              </p>
+              <p className="font-space-grotesk text-xs text-ink/70">
+                Data Anda terenkripsi aman menggunakan Supabase Auth.
+              </p>
             </div>
 
             <div className="card-neubrutalism bg-white p-4 space-y-2 hover:-translate-y-1 transition-transform">
               <div className="w-10 h-10 rounded-[12px] bg-lilac border-2 border-ink shadow-hard-sm flex items-center justify-center">
                 <RefreshCw className="h-5 w-5 text-ink" strokeWidth={2.5} />
               </div>
-              <p className="font-archivo-black text-sm text-ink">Jadwal Rutin</p>
-              <p className="font-space-grotesk text-xs text-ink/70">Otomatisasi tagihan, gaji & proyeksi kalender kas.</p>
+              <p className="font-archivo-black text-sm text-ink">
+                Jadwal Rutin
+              </p>
+              <p className="font-space-grotesk text-xs text-ink/70">
+                Otomatisasi tagihan, gaji & proyeksi kalender kas.
+              </p>
             </div>
           </div>
         </div>
@@ -154,8 +185,12 @@ export function AuthPage() {
               <TrendingUp className="h-5 w-5 text-ink" strokeWidth={2.5} />
             </div>
             <div>
-              <span className="font-archivo-black text-2xl tracking-tight text-ink block leading-none">CAWANG</span>
-              <p className="font-space-grotesk text-[11px] font-bold text-ink/70 uppercase tracking-wider">Catat Keuangan</p>
+              <span className="font-archivo-black text-2xl tracking-tight text-ink block leading-none">
+                CAWANG
+              </span>
+              <p className="font-space-grotesk text-[11px] font-bold text-ink/70 uppercase tracking-wider">
+                Catat Keuangan
+              </p>
             </div>
           </div>
 
@@ -166,15 +201,21 @@ export function AuthPage() {
                 <div className="w-10 h-10 rounded-[12px] bg-lilac border-2 border-ink shadow-hard-sm flex items-center justify-center mb-3">
                   <KeyRound className="h-5 w-5 text-ink" strokeWidth={2.5} />
                 </div>
-                <h2 className="font-archivo-black text-2xl text-ink">Lupa Password</h2>
+                <h2 className="font-archivo-black text-2xl text-ink">
+                  Lupa Password
+                </h2>
                 <p className="font-space-grotesk text-xs text-ink/70">
-                  Masukkan email terdaftar untuk menerima instruksi perbaruan kata sandi.
+                  Masukkan email terdaftar untuk menerima instruksi perbaruan
+                  kata sandi.
                 </p>
               </div>
 
               <form onSubmit={handleResetPassword} className="space-y-4">
                 <div className="space-y-1.5">
-                  <label htmlFor="reset-email" className="text-xs font-space-grotesk font-bold uppercase tracking-wider text-ink">
+                  <label
+                    htmlFor="reset-email"
+                    className="text-xs font-space-grotesk font-bold uppercase tracking-wider text-ink"
+                  >
                     Email
                   </label>
                   <Input
@@ -205,7 +246,9 @@ export function AuthPage() {
                     disabled={authLoading}
                     className="btn-neubrutalism bg-hot-pink text-white w-full py-3 text-sm font-space-grotesk font-bold flex items-center justify-center gap-2 disabled:opacity-50"
                   >
-                    {authLoading && <Loader2 className="h-4 w-4 animate-spin" />}
+                    {authLoading && (
+                      <Loader2 className="h-4 w-4 animate-spin" />
+                    )}
                     Kirim Link Reset
                   </button>
                   <button
@@ -238,15 +281,24 @@ export function AuthPage() {
               <TabsContent value="login" className="mt-0">
                 <div className="card-neubrutalism bg-white p-6 sm:p-8 space-y-6">
                   <div className="space-y-1">
-                    <h2 className="font-archivo-black text-2xl text-ink">Selamat Datang Kembali</h2>
+                    <h2 className="font-archivo-black text-2xl text-ink">
+                      Selamat Datang Kembali
+                    </h2>
                     <p className="font-space-grotesk text-xs text-ink/70">
                       Masuk ke akun CAWANG Anda untuk melanjutkan pembukuan.
                     </p>
                   </div>
 
-                  <form onSubmit={handleSignIn} className="space-y-4" id="form-login">
+                  <form
+                    onSubmit={handleSignIn}
+                    className="space-y-4"
+                    id="form-login"
+                  >
                     <div className="space-y-1.5">
-                      <label htmlFor="login-email" className="text-xs font-space-grotesk font-bold uppercase tracking-wider text-ink">
+                      <label
+                        htmlFor="login-email"
+                        className="text-xs font-space-grotesk font-bold uppercase tracking-wider text-ink"
+                      >
                         Email
                       </label>
                       <Input
@@ -263,7 +315,10 @@ export function AuthPage() {
 
                     <div className="space-y-1.5">
                       <div className="flex items-center justify-between">
-                        <label htmlFor="login-password" className="text-xs font-space-grotesk font-bold uppercase tracking-wider text-ink">
+                        <label
+                          htmlFor="login-password"
+                          className="text-xs font-space-grotesk font-bold uppercase tracking-wider text-ink"
+                        >
                           Password
                         </label>
                         <button
@@ -299,7 +354,11 @@ export function AuthPage() {
                         disabled={authLoading}
                         className="btn-neubrutalism bg-hot-pink text-white w-full py-3 text-sm font-space-grotesk font-bold flex items-center justify-center gap-2 disabled:opacity-50"
                       >
-                        {authLoading ? <Loader2 className="h-4 w-4 animate-spin" /> : <ArrowRight className="h-4 w-4" strokeWidth={3} />}
+                        {authLoading ? (
+                          <Loader2 className="h-4 w-4 animate-spin" />
+                        ) : (
+                          <ArrowRight className="h-4 w-4" strokeWidth={3} />
+                        )}
                         Masuk ke Dashboard
                       </button>
                     </div>
@@ -311,15 +370,24 @@ export function AuthPage() {
               <TabsContent value="register" className="mt-0">
                 <div className="card-neubrutalism bg-white p-6 sm:p-8 space-y-6">
                   <div className="space-y-1">
-                    <h2 className="font-archivo-black text-2xl text-ink">Buat Akun Baru</h2>
+                    <h2 className="font-archivo-black text-2xl text-ink">
+                      Buat Akun Baru
+                    </h2>
                     <p className="font-space-grotesk text-xs text-ink/70">
                       Mulai catat dan kelola keuangan pribadi Anda hari ini.
                     </p>
                   </div>
 
-                  <form onSubmit={handleSignUp} className="space-y-4" id="form-register">
+                  <form
+                    onSubmit={handleSignUp}
+                    className="space-y-4"
+                    id="form-register"
+                  >
                     <div className="space-y-1.5">
-                      <label htmlFor="reg-name" className="text-xs font-space-grotesk font-bold uppercase tracking-wider text-ink">
+                      <label
+                        htmlFor="reg-name"
+                        className="text-xs font-space-grotesk font-bold uppercase tracking-wider text-ink"
+                      >
                         Nama Lengkap
                       </label>
                       <Input
@@ -335,7 +403,10 @@ export function AuthPage() {
                     </div>
 
                     <div className="space-y-1.5">
-                      <label htmlFor="reg-email" className="text-xs font-space-grotesk font-bold uppercase tracking-wider text-ink">
+                      <label
+                        htmlFor="reg-email"
+                        className="text-xs font-space-grotesk font-bold uppercase tracking-wider text-ink"
+                      >
                         Email
                       </label>
                       <Input
@@ -351,7 +422,10 @@ export function AuthPage() {
                     </div>
 
                     <div className="space-y-1.5">
-                      <label htmlFor="reg-password" className="text-xs font-space-grotesk font-bold uppercase tracking-wider text-ink">
+                      <label
+                        htmlFor="reg-password"
+                        className="text-xs font-space-grotesk font-bold uppercase tracking-wider text-ink"
+                      >
                         Password
                       </label>
                       <Input
@@ -385,7 +459,11 @@ export function AuthPage() {
                         disabled={authLoading}
                         className="btn-neubrutalism bg-hot-pink text-white w-full py-3 text-sm font-space-grotesk font-bold flex items-center justify-center gap-2 disabled:opacity-50"
                       >
-                        {authLoading ? <Loader2 className="h-4 w-4 animate-spin" /> : <Sparkles className="h-4 w-4" strokeWidth={2.5} />}
+                        {authLoading ? (
+                          <Loader2 className="h-4 w-4 animate-spin" />
+                        ) : (
+                          <Sparkles className="h-4 w-4" strokeWidth={2.5} />
+                        )}
                         Daftar Akun CAWANG
                       </button>
                     </div>
@@ -396,11 +474,11 @@ export function AuthPage() {
           )}
 
           <p className="text-center text-xs font-space-grotesk text-ink/60 leading-relaxed px-4">
-            Dengan mendaftar atau masuk, Anda menyetujui bahwa data keuangan disimpan dengan aman menggunakan enkripsi Supabase.
+            Dengan mendaftar atau masuk, Anda menyetujui bahwa data keuangan
+            disimpan dengan aman menggunakan enkripsi Supabase.
           </p>
         </div>
       </div>
     </div>
   );
 }
-

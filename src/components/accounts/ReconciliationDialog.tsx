@@ -1,39 +1,54 @@
 "use client";
-import { useEffect, useState } from 'react'
-import { formatRupiah, cn } from '@/lib/utils'
-import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog'
-import { Input } from '@/components/ui/input'
-import { NumericFormat } from 'react-number-format'
-import type { AccountWithBalance } from './AccountCard'
+import { useEffect, useState } from "react";
+import { formatRupiah, cn } from "@/lib/utils";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
+import { Input } from "@/components/ui/input";
+import { NumericFormat } from "react-number-format";
+import type { AccountWithBalance } from "./AccountCard";
 
 interface ReconciliationDialogProps {
-  open: boolean
-  onOpenChange: (open: boolean) => void
-  account: AccountWithBalance | null
-  onSuccess: (data: { selisih: number; type: 'inflow' | 'outflow' }) => void
+  open: boolean;
+  onOpenChange: (open: boolean) => void;
+  account: AccountWithBalance | null;
+  onSuccess: (data: { selisih: number; type: "inflow" | "outflow" }) => void;
 }
 
-export function ReconciliationDialog({ open, onOpenChange, account, onSuccess }: ReconciliationDialogProps) {
-  const [realBalance, setRealBalance] = useState('')
+export function ReconciliationDialog({
+  open,
+  onOpenChange,
+  account,
+  onSuccess,
+}: ReconciliationDialogProps) {
+  const [realBalance, setRealBalance] = useState("");
 
   useEffect(() => {
     if (open && account) {
-      setRealBalance(String(account.actual_balance))
+      setRealBalance(String(account.actual_balance));
     }
-  }, [open, account])
+  }, [open, account]);
 
-  if (!account) return null
+  if (!account) return null;
 
-  const realBalanceNum = Number(realBalance) || 0
-  const selisih = realBalanceNum - account.actual_balance
+  const realBalanceNum = Number(realBalance) || 0;
+  const selisih = realBalanceNum - account.actual_balance;
 
   const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault()
+    e.preventDefault();
     if (selisih !== 0) {
-      onSuccess({ selisih: Math.abs(selisih), type: selisih > 0 ? 'inflow' : 'outflow' })
+      onSuccess({
+        selisih: Math.abs(selisih),
+        type: selisih > 0 ? "inflow" : "outflow",
+      });
     }
-    onOpenChange(false)
-  }
+    onOpenChange(false);
+  };
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -41,23 +56,37 @@ export function ReconciliationDialog({ open, onOpenChange, account, onSuccess }:
         <DialogHeader>
           <DialogTitle>Reconciliation: {account.name}</DialogTitle>
           <DialogDescription>
-            Sesuaikan saldo di aplikasi dengan saldo aktual di bank atau e-wallet Anda.
+            Sesuaikan saldo di aplikasi dengan saldo aktual di bank atau
+            e-wallet Anda.
           </DialogDescription>
         </DialogHeader>
 
         <div className="space-y-4 py-2">
           <div className="flex flex-col gap-1 p-3.5 bg-canvas border-2 border-ink rounded-[14px] shadow-hard-sm">
-            <span className="text-xs font-space-grotesk font-bold uppercase tracking-wider text-ink/70">Saldo Tercatat Saat Ini</span>
-            <span className="text-2xl font-archivo-black text-ink">{formatRupiah(account.actual_balance)}</span>
+            <span className="text-xs font-space-grotesk font-bold uppercase tracking-wider text-ink/70">
+              Saldo Tercatat Saat Ini
+            </span>
+            <span className="text-2xl font-archivo-black text-ink">
+              {formatRupiah(account.actual_balance)}
+            </span>
           </div>
 
-          <form id="reconciliation-form" onSubmit={handleSubmit} className="space-y-4">
+          <form
+            id="reconciliation-form"
+            onSubmit={handleSubmit}
+            className="space-y-4"
+          >
             <div className="space-y-1.5">
-              <label htmlFor="input-actual-balance" className="text-xs font-space-grotesk font-bold uppercase tracking-wider text-ink">
+              <label
+                htmlFor="input-actual-balance"
+                className="text-xs font-space-grotesk font-bold uppercase tracking-wider text-ink"
+              >
                 Saldo Aktual (Sebenarnya)
               </label>
               <div className="relative">
-                <span className="absolute left-3.5 top-1/2 -translate-y-1/2 text-xs font-space-mono font-bold text-ink/60">Rp</span>
+                <span className="absolute left-3.5 top-1/2 -translate-y-1/2 text-xs font-space-mono font-bold text-ink/60">
+                  Rp
+                </span>
                 <NumericFormat
                   id="input-actual-balance"
                   customInput={Input}
@@ -65,12 +94,17 @@ export function ReconciliationDialog({ open, onOpenChange, account, onSuccess }:
                   placeholder="0"
                   thousandSeparator="."
                   decimalSeparator=","
-                  value={realBalance ? realBalance : ''}
-                  onValueChange={(values) => setRealBalance(String(values.floatValue || 0))}
+                  value={realBalance ? realBalance : ""}
+                  onValueChange={(values) =>
+                    setRealBalance(String(values.floatValue || 0))
+                  }
                   min={0}
                 />
               </div>
-              <p className="text-[11px] font-space-grotesk text-ink/60">Masukkan jumlah saldo riil saat ini dari m-banking atau aplikasi dompet.</p>
+              <p className="text-[11px] font-space-grotesk text-ink/60">
+                Masukkan jumlah saldo riil saat ini dari m-banking atau aplikasi
+                dompet.
+              </p>
             </div>
 
             <div className="pt-1">
@@ -80,12 +114,24 @@ export function ReconciliationDialog({ open, onOpenChange, account, onSuccess }:
                 </div>
               ) : (
                 <div className="p-3.5 bg-white rounded-[14px] border-2 border-ink shadow-hard-sm space-y-1">
-                  <span className="text-xs font-space-grotesk font-bold uppercase tracking-wider text-ink/70">Selisih yang akan disesuaikan:</span>
-                  <p className={cn('text-xl font-archivo-black', selisih > 0 ? 'text-mint' : 'text-coral')}>
-                    {selisih > 0 ? '+' : ''}{formatRupiah(selisih)}
+                  <span className="text-xs font-space-grotesk font-bold uppercase tracking-wider text-ink/70">
+                    Selisih yang akan disesuaikan:
+                  </span>
+                  <p
+                    className={cn(
+                      "text-xl font-archivo-black",
+                      selisih > 0 ? "text-mint" : "text-coral",
+                    )}
+                  >
+                    {selisih > 0 ? "+" : ""}
+                    {formatRupiah(selisih)}
                   </p>
                   <p className="text-[11px] font-space-grotesk text-ink/70">
-                    Akan dibuatkan transaksi penyesuaian otomatis ({selisih > 0 ? 'Pemasukan / Inflow' : 'Pengeluaran / Outflow'}).
+                    Akan dibuatkan transaksi penyesuaian otomatis (
+                    {selisih > 0
+                      ? "Pemasukan / Inflow"
+                      : "Pengeluaran / Outflow"}
+                    ).
                   </p>
                 </div>
               )}
@@ -113,5 +159,5 @@ export function ReconciliationDialog({ open, onOpenChange, account, onSuccess }:
         </div>
       </DialogContent>
     </Dialog>
-  )
+  );
 }

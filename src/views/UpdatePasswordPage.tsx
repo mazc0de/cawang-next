@@ -1,11 +1,11 @@
 "use client";
-import { useState } from 'react';
-import { supabase } from '@/lib/supabase';
-import { Input } from '@/components/ui/input';
-import { TrendingUp, Loader2, KeyRound, Check } from 'lucide-react';
+import { useState } from "react";
+import { supabase } from "@/lib/supabase";
+import { Input } from "@/components/ui/input";
+import { TrendingUp, Loader2, KeyRound, Check } from "lucide-react";
 
 export function UpdatePasswordPage() {
-  const [password, setPassword] = useState('');
+  const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [message, setMessage] = useState<string | null>(null);
@@ -23,9 +23,11 @@ export function UpdatePasswordPage() {
     if (error) {
       setError(error.message);
     } else {
-      setMessage('Password berhasil diperbarui! Anda akan dialihkan ke dashboard...');
+      setMessage(
+        "Password berhasil diperbarui! Anda akan dialihkan ke dashboard...",
+      );
       setTimeout(() => {
-        window.location.href = '/dashboard';
+        window.location.href = "/dashboard";
       }, 2000);
     }
     setLoading(false);
@@ -41,8 +43,12 @@ export function UpdatePasswordPage() {
               <TrendingUp className="h-6 w-6 text-ink" strokeWidth={2.5} />
             </div>
             <div>
-              <span className="font-archivo-black text-3xl tracking-tight text-ink block leading-tight">CAWANG</span>
-              <p className="font-space-grotesk text-xs font-bold text-ink/70 uppercase tracking-wider">Catat Keuangan</p>
+              <span className="font-archivo-black text-3xl tracking-tight text-ink block leading-tight">
+                CAWANG
+              </span>
+              <p className="font-space-grotesk text-xs font-bold text-ink/70 uppercase tracking-wider">
+                Catat Keuangan
+              </p>
             </div>
           </div>
         </div>
@@ -52,7 +58,8 @@ export function UpdatePasswordPage() {
             Perbarui Kata Sandi
           </h1>
           <p className="font-space-grotesk text-ink/80 text-base max-w-lg leading-relaxed font-medium">
-            Amankan kembali akun Anda dengan memasukkan kata sandi baru yang kuat.
+            Amankan kembali akun Anda dengan memasukkan kata sandi baru yang
+            kuat.
           </p>
         </div>
 
@@ -70,8 +77,12 @@ export function UpdatePasswordPage() {
               <TrendingUp className="h-5 w-5 text-ink" strokeWidth={2.5} />
             </div>
             <div>
-              <span className="font-archivo-black text-2xl tracking-tight text-ink block leading-none">CAWANG</span>
-              <p className="font-space-grotesk text-[11px] font-bold text-ink/70 uppercase tracking-wider">Catat Keuangan</p>
+              <span className="font-archivo-black text-2xl tracking-tight text-ink block leading-none">
+                CAWANG
+              </span>
+              <p className="font-space-grotesk text-[11px] font-bold text-ink/70 uppercase tracking-wider">
+                Catat Keuangan
+              </p>
             </div>
           </div>
 
@@ -80,7 +91,9 @@ export function UpdatePasswordPage() {
               <div className="w-10 h-10 rounded-[12px] bg-lilac border-2 border-ink shadow-hard-sm flex items-center justify-center mb-3">
                 <KeyRound className="h-5 w-5 text-ink" strokeWidth={2.5} />
               </div>
-              <h2 className="font-archivo-black text-2xl text-ink">Password Baru</h2>
+              <h2 className="font-archivo-black text-2xl text-ink">
+                Password Baru
+              </h2>
               <p className="font-space-grotesk text-xs text-ink/70">
                 Silakan buat password baru minimal 8 karakter.
               </p>
@@ -88,7 +101,10 @@ export function UpdatePasswordPage() {
 
             <form onSubmit={handleUpdatePassword} className="space-y-4">
               <div className="space-y-1.5">
-                <label htmlFor="new-password" className="text-xs font-space-grotesk font-bold uppercase tracking-wider text-ink">
+                <label
+                  htmlFor="new-password"
+                  className="text-xs font-space-grotesk font-bold uppercase tracking-wider text-ink"
+                >
                   Password Baru
                 </label>
                 <Input
@@ -132,4 +148,3 @@ export function UpdatePasswordPage() {
     </div>
   );
 }
-

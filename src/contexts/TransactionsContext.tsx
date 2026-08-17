@@ -1,5 +1,5 @@
-'use client';
-import React, { createContext, useContext, useState } from 'react';
+"use client";
+import React, { createContext, useContext, useState } from "react";
 
 interface TransactionsContextType {
   selectedDate: Date;
@@ -10,9 +10,15 @@ interface TransactionsContextType {
   setEditingTransaction: (tx: any) => void;
 }
 
-const TransactionsContext = createContext<TransactionsContextType | undefined>(undefined);
+const TransactionsContext = createContext<TransactionsContextType | undefined>(
+  undefined,
+);
 
-export function TransactionsProvider({ children }: { children: React.ReactNode }) {
+export function TransactionsProvider({
+  children,
+}: {
+  children: React.ReactNode;
+}) {
   const [selectedDate, setSelectedDate] = useState<Date>(new Date());
   const [showForm, setShowForm] = useState(false);
   const [editingTransaction, setEditingTransaction] = useState<any>(undefined);

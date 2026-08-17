@@ -1,7 +1,14 @@
 "use client";
-import type { Account } from '@/types/domain';
+import type { Account } from "@/types/domain";
 import { formatRupiah, cn } from "@/lib/utils";
-import { Pencil, Trash2, ArrowRightLeft, Landmark, Smartphone, Banknote } from "lucide-react";
+import {
+  Pencil,
+  Trash2,
+  ArrowRightLeft,
+  Landmark,
+  Smartphone,
+  Banknote,
+} from "lucide-react";
 
 export type AccountWithBalance = Account & { actual_balance: number };
 
@@ -12,14 +19,23 @@ interface AccountCardProps {
   onReconcile: (account: AccountWithBalance) => void;
 }
 
-export function AccountCard({ account, onEdit, onDelete, onReconcile }: AccountCardProps) {
+export function AccountCard({
+  account,
+  onEdit,
+  onDelete,
+  onReconcile,
+}: AccountCardProps) {
   const typeMap: Record<string, { label: string; bg: string; icon: any }> = {
     bank: { label: "Bank", bg: "bg-mint", icon: Landmark },
     e_wallet: { label: "E-Wallet", bg: "bg-lilac", icon: Smartphone },
     cash: { label: "Tunai", bg: "bg-canary", icon: Banknote },
   };
 
-  const currentType = typeMap[account.type] || { label: account.type, bg: "bg-canvas", icon: Landmark };
+  const currentType = typeMap[account.type] || {
+    label: account.type,
+    bg: "bg-canvas",
+    icon: Landmark,
+  };
   const Icon = currentType.icon;
 
   return (
@@ -33,13 +49,15 @@ export function AccountCard({ account, onEdit, onDelete, onReconcile }: AccountC
           <div
             className={cn(
               "w-11 h-11 rounded-[12px] border-2 border-ink flex items-center justify-center shrink-0 shadow-[2px_2px_0px_0px_#111111]",
-              currentType.bg
+              currentType.bg,
             )}
           >
             <Icon className="h-5 w-5 text-ink" strokeWidth={2.5} />
           </div>
           <div className="min-w-0">
-            <h3 className="font-archivo-black text-lg text-ink truncate leading-tight">{account.name}</h3>
+            <h3 className="font-archivo-black text-lg text-ink truncate leading-tight">
+              {account.name}
+            </h3>
             <span className="inline-block mt-0.5 px-2 py-0.5 rounded-full bg-canvas border border-ink font-space-mono text-[10px] font-bold text-ink uppercase">
               {currentType.label}
             </span>
@@ -49,7 +67,9 @@ export function AccountCard({ account, onEdit, onDelete, onReconcile }: AccountC
 
       {/* Middle: Balance */}
       <div className="p-3.5 rounded-[14px] bg-canvas border-2 border-ink shadow-hard-sm">
-        <p className="font-space-grotesk font-bold text-[11px] uppercase tracking-wider text-ink/60">Saldo Saat Ini</p>
+        <p className="font-space-grotesk font-bold text-[11px] uppercase tracking-wider text-ink/60">
+          Saldo Saat Ini
+        </p>
         <p className="font-space-mono font-bold text-2xl text-ink tracking-tight truncate mt-1">
           {formatRupiah(account.actual_balance)}
         </p>

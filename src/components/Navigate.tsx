@@ -1,9 +1,9 @@
 "use client";
 
-import { useEffect } from 'react';
-import { useRouter } from 'next/navigation';
+import { useEffect } from "react";
+import { useRouter } from "next/navigation";
 
-export function Navigate({ to, replace }: { to: string, replace?: boolean }) {
+export function Navigate({ to, replace }: { to: string; replace?: boolean }) {
   const router = useRouter();
 
   useEffect(() => {

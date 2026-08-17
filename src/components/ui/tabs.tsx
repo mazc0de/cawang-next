@@ -1,10 +1,10 @@
-"use client"
+"use client";
 
-import * as React from "react"
-import { cva, type VariantProps } from "class-variance-authority"
-import { Tabs as TabsPrimitive } from "radix-ui"
+import * as React from "react";
+import { cva, type VariantProps } from "class-variance-authority";
+import { Tabs as TabsPrimitive } from "radix-ui";
 
-import { cn } from "@/lib/utils"
+import { cn } from "@/lib/utils";
 
 function Tabs({
   className,
@@ -17,11 +17,11 @@ function Tabs({
       data-orientation={orientation}
       className={cn(
         "group/tabs flex gap-2 data-horizontal:flex-col",
-        className
+        className,
       )}
       {...props}
     />
-  )
+  );
 }
 
 const tabsListVariants = cva(
@@ -36,8 +36,8 @@ const tabsListVariants = cva(
     defaultVariants: {
       variant: "default",
     },
-  }
-)
+  },
+);
 
 function TabsList({
   className,
@@ -52,7 +52,7 @@ function TabsList({
       className={cn(tabsListVariants({ variant }), className)}
       {...props}
     />
-  )
+  );
 }
 
 function TabsTrigger({
@@ -65,11 +65,11 @@ function TabsTrigger({
       className={cn(
         "cursor-pointer relative inline-flex items-center justify-center gap-1.5 rounded-[10px] border-2 border-transparent px-4 py-2 font-space-grotesk font-bold text-xs sm:text-sm whitespace-nowrap text-ink/70 transition-all hover:text-ink hover:bg-white/60 focus-visible:outline-none disabled:pointer-events-none disabled:opacity-50 select-none",
         "data-[state=active]:border-ink data-[state=active]:bg-canary data-[state=active]:text-ink data-[state=active]:shadow-[2px_2px_0px_0px_#111111]",
-        className
+        className,
       )}
       {...props}
     />
-  )
+  );
 }
 
 function TabsContent({
@@ -82,7 +82,7 @@ function TabsContent({
       className={cn("flex-1 text-sm outline-none", className)}
       {...props}
     />
-  )
+  );
 }
 
-export { Tabs, TabsList, TabsTrigger, TabsContent, tabsListVariants }
+export { Tabs, TabsList, TabsTrigger, TabsContent, tabsListVariants };

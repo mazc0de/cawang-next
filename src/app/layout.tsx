@@ -19,7 +19,7 @@ const spaceMono = Space_Mono({
   subsets: ["latin"],
 });
 
-import { Providers } from './providers';
+import { Providers } from "./providers";
 
 export const viewport: Viewport = {
   themeColor: "#ffd23f",

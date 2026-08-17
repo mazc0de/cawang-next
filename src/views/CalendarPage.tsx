@@ -1,29 +1,50 @@
 "use client";
-import { useMemo, useState } from 'react';
-import { format, eachDayOfInterval, isSameDay, isToday, getDay } from 'date-fns';
-import { id as idLocale } from 'date-fns/locale';
-import { TrendingUp, TrendingDown, RefreshCw, Calendar as CalendarIcon, ArrowUpRight, ArrowDownRight, Plus, Sparkles } from 'lucide-react';
-import { cn, formatRupiah } from '@/lib/utils';
-import { useTransactions } from '@/hooks/useTransactions';
-import { useRecurringRules } from '@/hooks/useRecurringRules';
-import { useFinancialCycleConfig } from '@/hooks/useFinancialCycleConfig';
-import { useCalendarContext } from '@/contexts/CalendarContext';
-import { useTransactionsContext } from '@/contexts/TransactionsContext';
-import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
+import { useMemo, useState } from "react";
+import {
+  format,
+  eachDayOfInterval,
+  isSameDay,
+  isToday,
+  getDay,
+} from "date-fns";
+import { id as idLocale } from "date-fns/locale";
+import {
+  TrendingUp,
+  TrendingDown,
+  RefreshCw,
+  Calendar as CalendarIcon,
+  ArrowUpRight,
+  ArrowDownRight,
+  Plus,
+  Sparkles,
+} from "lucide-react";
+import { cn, formatRupiah } from "@/lib/utils";
+import { useTransactions } from "@/hooks/useTransactions";
+import { useRecurringRules } from "@/hooks/useRecurringRules";
+import { useFinancialCycleConfig } from "@/hooks/useFinancialCycleConfig";
+import { useCalendarContext } from "@/contexts/CalendarContext";
+import { useTransactionsContext } from "@/contexts/TransactionsContext";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+  DialogFooter,
+} from "@/components/ui/dialog";
 
 interface CalendarItem {
   date: string;
   amount: number;
-  type: 'inflow' | 'outflow';
+  type: "inflow" | "outflow";
   is_projection: boolean;
   label: string;
 }
 
-function getTransactionsForDay(
-  date: Date,
-  items: CalendarItem[]
-) {
-  return items.filter((item) => isSameDay(new Date(item.date + 'T00:00:00'), date));
+function getTransactionsForDay(date: Date, items: CalendarItem[]) {
+  return items.filter((item) =>
+    isSameDay(new Date(item.date + "T00:00:00"), date),
+  );
 }
 
 function DayCell({
@@ -41,8 +62,12 @@ function DayCell({
 }) {
   const today = isToday(date);
   const dayItems = getTransactionsForDay(date, items);
-  const inflow = dayItems.filter((i) => i.type === 'inflow').reduce((s, i) => s + i.amount, 0);
-  const outflow = dayItems.filter((i) => i.type === 'outflow').reduce((s, i) => s + i.amount, 0);
+  const inflow = dayItems
+    .filter((i) => i.type === "inflow")
+    .reduce((s, i) => s + i.amount, 0);
+  const outflow = dayItems
+    .filter((i) => i.type === "outflow")
+    .reduce((s, i) => s + i.amount, 0);
   const hasProjection = dayItems.some((i) => i.is_projection);
 
   return (
@@ -50,21 +75,29 @@ function DayCell({
       type="button"
       onClick={() => onSelect(date)}
       className={cn(
-        'min-h-[112px] p-2.5 text-left rounded-[16px] border-2 transition-all flex flex-col justify-between cursor-pointer relative group',
-        !isInCycle ? 'opacity-30 bg-canvas/60 border-ink/15' : 'bg-white hover:bg-canvas/80 border-ink shadow-hard-sm hover:shadow-hard-md hover:-translate-y-0.5',
-        today && 'bg-canary border-ink shadow-hard-md ring-2 ring-ink',
-        isSelected && !today && 'ring-4 ring-hot-pink border-ink shadow-hard-md bg-canvas'
+        "min-h-[112px] p-2.5 text-left rounded-[16px] border-2 transition-all flex flex-col justify-between cursor-pointer relative group",
+        !isInCycle
+          ? "opacity-30 bg-canvas/60 border-ink/15"
+          : "bg-white hover:bg-canvas/80 border-ink shadow-hard-sm hover:shadow-hard-md hover:-translate-y-0.5",
+        today && "bg-canary border-ink shadow-hard-md ring-2 ring-ink",
+        isSelected &&
+          !today &&
+          "ring-4 ring-hot-pink border-ink shadow-hard-md bg-canvas",
       )}
     >
       {/* Top Header of Day Cell */}
       <div className="flex items-center justify-between w-full">
         <span
           className={cn(
-            'text-xs font-space-mono font-bold w-7 h-7 flex items-center justify-center rounded-full border-2 border-ink shadow-[1px_1px_0px_0px_#111]',
-            today ? 'bg-ink text-white' : isSelected ? 'bg-hot-pink text-white' : 'bg-canvas text-ink'
+            "text-xs font-space-mono font-bold w-7 h-7 flex items-center justify-center rounded-full border-2 border-ink shadow-[1px_1px_0px_0px_#111]",
+            today
+              ? "bg-ink text-white"
+              : isSelected
+                ? "bg-hot-pink text-white"
+                : "bg-canvas text-ink",
           )}
         >
-          {format(date, 'd')}
+          {format(date, "d")}
         </span>
 
         <div className="flex items-center gap-1">
@@ -146,8 +179,8 @@ export function CalendarPage() {
     }
   }
 
-  const startStr = format(cycleStart, 'yyyy-MM-dd');
-  const endStr = format(cycleEnd, 'yyyy-MM-dd');
+  const startStr = format(cycleStart, "yyyy-MM-dd");
+  const endStr = format(cycleEnd, "yyyy-MM-dd");
 
   const { data: transactions = [], isLoading: txLoading } = useTransactions({
     start_date: startStr,
@@ -162,19 +195,24 @@ export function CalendarPage() {
       ...transactions.map((tx) => ({
         date: tx.date.substring(0, 10),
         amount: tx.amount,
-        type: tx.type as 'inflow' | 'outflow',
+        type: tx.type as "inflow" | "outflow",
         is_projection: false,
-        label: tx.notes || (tx as any).category?.name || 'Transaksi',
+        label: tx.notes || (tx as any).category?.name || "Transaksi",
       })),
       // Projected from active Recurring Rules
       ...recurringRules
-        .filter((r) => r.is_active && r.next_due_date >= startStr && r.next_due_date <= endStr)
+        .filter(
+          (r) =>
+            r.is_active &&
+            r.next_due_date >= startStr &&
+            r.next_due_date <= endStr,
+        )
         .map((r) => ({
           date: r.next_due_date,
           amount: r.amount,
-          type: r.type as 'inflow' | 'outflow',
+          type: r.type as "inflow" | "outflow",
           is_projection: true,
-          label: r.description || (r as any).category?.name || 'Tagihan Rutin',
+          label: r.description || (r as any).category?.name || "Tagihan Rutin",
         })),
     ];
   }, [transactions, recurringRules, startStr, endStr]);
@@ -209,14 +247,20 @@ export function CalendarPage() {
     }
   };
 
-  const selectedItems = selectedDate ? getTransactionsForDay(selectedDate, calendarItems) : [];
-  const selectedDayTotalInflow = selectedItems.filter((i) => i.type === 'inflow').reduce((s, i) => s + i.amount, 0);
-  const selectedDayTotalOutflow = selectedItems.filter((i) => i.type === 'outflow').reduce((s, i) => s + i.amount, 0);
+  const selectedItems = selectedDate
+    ? getTransactionsForDay(selectedDate, calendarItems)
+    : [];
+  const selectedDayTotalInflow = selectedItems
+    .filter((i) => i.type === "inflow")
+    .reduce((s, i) => s + i.amount, 0);
+  const selectedDayTotalOutflow = selectedItems
+    .filter((i) => i.type === "outflow")
+    .reduce((s, i) => s + i.amount, 0);
 
   const monthLabel =
     startDay === 1
-      ? format(cycleStart, 'MMMM yyyy', { locale: idLocale })
-      : `${format(cycleStart, 'd MMM yyyy', { locale: idLocale })} – ${format(cycleEnd, 'd MMM yyyy', { locale: idLocale })}`;
+      ? format(cycleStart, "MMMM yyyy", { locale: idLocale })
+      : `${format(cycleStart, "d MMM yyyy", { locale: idLocale })} – ${format(cycleEnd, "d MMM yyyy", { locale: idLocale })}`;
 
   return (
     <div className="space-y-6 pb-12 max-w-7xl mx-auto w-full">
@@ -227,7 +271,8 @@ export function CalendarPage() {
             {monthLabel}
           </h2>
           <p className="font-space-grotesk font-medium text-xs text-ink/70 mt-0.5">
-            Klik pada tanggal kalender untuk membuka rincian transaksi & estimasi tagihan
+            Klik pada tanggal kalender untuk membuka rincian transaksi &
+            estimasi tagihan
           </p>
         </div>
 
@@ -235,15 +280,21 @@ export function CalendarPage() {
         <div className="flex items-center flex-wrap gap-2.5">
           <div className="flex items-center gap-1.5 px-3 py-1 rounded-full bg-white border-2 border-ink shadow-[2px_2px_0px_0px_#111]">
             <div className="h-3 w-3 rounded-full bg-mint border border-ink" />
-            <span className="font-space-mono text-xs font-bold text-ink">Inflow / Masuk</span>
+            <span className="font-space-mono text-xs font-bold text-ink">
+              Inflow / Masuk
+            </span>
           </div>
           <div className="flex items-center gap-1.5 px-3 py-1 rounded-full bg-white border-2 border-ink shadow-[2px_2px_0px_0px_#111]">
             <div className="h-3 w-3 rounded-full bg-coral border border-ink" />
-            <span className="font-space-mono text-xs font-bold text-ink">Outflow / Keluar</span>
+            <span className="font-space-mono text-xs font-bold text-ink">
+              Outflow / Keluar
+            </span>
           </div>
           <div className="flex items-center gap-1.5 px-3 py-1 rounded-full bg-white border-2 border-ink shadow-[2px_2px_0px_0px_#111]">
             <div className="h-3 w-3 rounded-full bg-lilac border border-ink" />
-            <span className="font-space-mono text-xs font-bold text-ink">Tagihan Rutin</span>
+            <span className="font-space-mono text-xs font-bold text-ink">
+              Tagihan Rutin
+            </span>
           </div>
         </div>
       </div>
@@ -252,29 +303,36 @@ export function CalendarPage() {
       <div className="card-neubrutalism bg-white p-5 sm:p-7 space-y-4 w-full">
         {/* Day of week headers */}
         <div className="grid grid-cols-7 gap-2.5 text-center">
-          {['Senin', 'Selasa', 'Rabu', 'Kamis', 'Jumat', 'Sabtu', 'Minggu'].map((d) => (
-            <div
-              key={d}
-              className="py-2.5 bg-canvas rounded-xl border-2 border-ink font-space-grotesk font-bold text-xs uppercase tracking-wider text-ink shadow-[2px_2px_0px_0px_#111]"
-            >
-              <span className="hidden sm:inline">{d}</span>
-              <span className="sm:hidden">{d.slice(0, 3)}</span>
-            </div>
-          ))}
+          {["Senin", "Selasa", "Rabu", "Kamis", "Jumat", "Sabtu", "Minggu"].map(
+            (d) => (
+              <div
+                key={d}
+                className="py-2.5 bg-canvas rounded-xl border-2 border-ink font-space-grotesk font-bold text-xs uppercase tracking-wider text-ink shadow-[2px_2px_0px_0px_#111]"
+              >
+                <span className="hidden sm:inline">{d}</span>
+                <span className="sm:hidden">{d.slice(0, 3)}</span>
+              </div>
+            ),
+          )}
         </div>
 
         {/* Calendar Day Grid */}
         {txLoading ? (
           <div className="grid grid-cols-7 gap-2.5">
             {Array.from({ length: 35 }).map((_, i) => (
-              <div key={i} className="min-h-[112px] bg-canvas animate-pulse rounded-[16px] border-2 border-ink/10" />
+              <div
+                key={i}
+                className="min-h-[112px] bg-canvas animate-pulse rounded-[16px] border-2 border-ink/10"
+              />
             ))}
           </div>
         ) : (
           <div className="grid grid-cols-7 gap-2.5">
             {allDays.map((day, i) => {
               const dayTime = day.getTime();
-              const isInCycle = dayTime >= cycleStart.getTime() && dayTime <= cycleEnd.getTime();
+              const isInCycle =
+                dayTime >= cycleStart.getTime() &&
+                dayTime <= cycleEnd.getTime();
               return (
                 <DayCell
                   key={i}
@@ -282,7 +340,9 @@ export function CalendarPage() {
                   items={calendarItems}
                   isInCycle={isInCycle}
                   onSelect={handleSelectDay}
-                  isSelected={selectedDate ? isSameDay(day, selectedDate) : false}
+                  isSelected={
+                    selectedDate ? isSameDay(day, selectedDate) : false
+                  }
                 />
               );
             })}
@@ -299,27 +359,38 @@ export function CalendarPage() {
                 <CalendarIcon className="h-6 w-6 text-ink" strokeWidth={2.5} />
               </div>
               <div className="min-w-0 flex-1">
-                <p className="font-space-grotesk font-bold text-xs uppercase tracking-wider text-ink/70">Rincian Tanggal</p>
+                <p className="font-space-grotesk font-bold text-xs uppercase tracking-wider text-ink/70">
+                  Rincian Tanggal
+                </p>
                 <DialogTitle className="text-xl sm:text-2xl mt-0.5 truncate">
-                  {selectedDate ? format(selectedDate, 'EEEE, d MMMM yyyy', { locale: idLocale }) : 'Pilih Tanggal'}
+                  {selectedDate
+                    ? format(selectedDate, "EEEE, d MMMM yyyy", {
+                        locale: idLocale,
+                      })
+                    : "Pilih Tanggal"}
                 </DialogTitle>
               </div>
             </div>
             <DialogDescription className="text-xs font-space-grotesk text-ink/70">
-              Daftar seluruh transaksi tercatat dan jadwal tagihan rutin pada hari ini.
+              Daftar seluruh transaksi tercatat dan jadwal tagihan rutin pada
+              hari ini.
             </DialogDescription>
           </DialogHeader>
 
           {/* Daily Net Summary Cards */}
           <div className="grid grid-cols-2 gap-3 py-1">
             <div className="p-3 rounded-[14px] bg-canvas border-2 border-ink shadow-hard-sm">
-              <span className="font-space-grotesk font-bold text-[11px] uppercase tracking-wider text-ink/70 block">Total Masuk</span>
+              <span className="font-space-grotesk font-bold text-[11px] uppercase tracking-wider text-ink/70 block">
+                Total Masuk
+              </span>
               <p className="font-archivo-black text-lg sm:text-xl text-mint mt-0.5 truncate">
                 +{formatRupiah(selectedDayTotalInflow, true)}
               </p>
             </div>
             <div className="p-3 rounded-[14px] bg-canvas border-2 border-ink shadow-hard-sm">
-              <span className="font-space-grotesk font-bold text-[11px] uppercase tracking-wider text-ink/70 block">Total Keluar</span>
+              <span className="font-space-grotesk font-bold text-[11px] uppercase tracking-wider text-ink/70 block">
+                Total Keluar
+              </span>
               <p className="font-archivo-black text-lg sm:text-xl text-coral mt-0.5 truncate">
                 -{formatRupiah(selectedDayTotalOutflow, true)}
               </p>
@@ -331,36 +402,49 @@ export function CalendarPage() {
             {selectedItems.length === 0 ? (
               <div className="py-12 text-center rounded-[16px] bg-canvas border-2 border-dashed border-ink/20 flex flex-col items-center justify-center">
                 <Sparkles className="h-8 w-8 text-ink/40 mb-2" />
-                <p className="font-archivo-black text-sm text-ink">Tidak Ada Transaksi</p>
-                <p className="font-space-grotesk text-xs text-ink/60 mt-0.5">Belum ada catatan atau proyeksi pada tanggal ini.</p>
+                <p className="font-archivo-black text-sm text-ink">
+                  Tidak Ada Transaksi
+                </p>
+                <p className="font-space-grotesk text-xs text-ink/60 mt-0.5">
+                  Belum ada catatan atau proyeksi pada tanggal ini.
+                </p>
               </div>
             ) : (
               selectedItems.map((item, i) => (
                 <div
                   key={i}
                   className={cn(
-                    'p-3.5 rounded-[14px] bg-white border-2 border-ink shadow-hard-sm flex items-center justify-between gap-3 group hover:-translate-y-0.5 transition-transform',
-                    item.is_projection && 'border-dashed bg-canvas/40'
+                    "p-3.5 rounded-[14px] bg-white border-2 border-ink shadow-hard-sm flex items-center justify-between gap-3 group hover:-translate-y-0.5 transition-transform",
+                    item.is_projection && "border-dashed bg-canvas/40",
                   )}
                 >
                   <div className="flex items-center gap-3 min-w-0">
                     <div
                       className={cn(
-                        'w-9 h-9 rounded-full border-2 border-ink flex items-center justify-center shrink-0 shadow-[1px_1px_0px_0px_#111]',
-                        item.type === 'inflow' ? 'bg-mint' : 'bg-coral'
+                        "w-9 h-9 rounded-full border-2 border-ink flex items-center justify-center shrink-0 shadow-[1px_1px_0px_0px_#111]",
+                        item.type === "inflow" ? "bg-mint" : "bg-coral",
                       )}
                     >
-                      {item.type === 'inflow' ? (
-                        <TrendingUp className="h-4 w-4 text-ink" strokeWidth={2.5} />
+                      {item.type === "inflow" ? (
+                        <TrendingUp
+                          className="h-4 w-4 text-ink"
+                          strokeWidth={2.5}
+                        />
                       ) : (
-                        <TrendingDown className="h-4 w-4 text-ink" strokeWidth={2.5} />
+                        <TrendingDown
+                          className="h-4 w-4 text-ink"
+                          strokeWidth={2.5}
+                        />
                       )}
                     </div>
                     <div className="min-w-0">
-                      <p className="font-space-grotesk font-bold text-xs sm:text-sm text-ink truncate">{item.label}</p>
+                      <p className="font-space-grotesk font-bold text-xs sm:text-sm text-ink truncate">
+                        {item.label}
+                      </p>
                       {item.is_projection && (
                         <span className="inline-flex items-center gap-1 font-space-mono text-[9px] font-bold text-ink/80 px-2 py-0.5 rounded-full border border-ink bg-lilac mt-1">
-                          <RefreshCw className="h-2.5 w-2.5" /> Tagihan Rutin (Proyeksi)
+                          <RefreshCw className="h-2.5 w-2.5" /> Tagihan Rutin
+                          (Proyeksi)
                         </span>
                       )}
                     </div>
@@ -369,11 +453,12 @@ export function CalendarPage() {
                   <div className="text-right shrink-0">
                     <span
                       className={cn(
-                        'font-space-mono font-bold text-xs sm:text-sm',
-                        item.type === 'inflow' ? 'text-mint' : 'text-coral'
+                        "font-space-mono font-bold text-xs sm:text-sm",
+                        item.type === "inflow" ? "text-mint" : "text-coral",
                       )}
                     >
-                      {item.type === 'inflow' ? '+' : '-'}{formatRupiah(item.amount, true)}
+                      {item.type === "inflow" ? "+" : "-"}
+                      {formatRupiah(item.amount, true)}
                     </span>
                   </div>
                 </div>
@@ -404,5 +489,3 @@ export function CalendarPage() {
     </div>
   );
 }
-
-

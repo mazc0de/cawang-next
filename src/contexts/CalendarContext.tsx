@@ -1,5 +1,5 @@
-'use client';
-import React, { createContext, useContext, useState } from 'react';
+"use client";
+import React, { createContext, useContext, useState } from "react";
 
 interface CalendarContextType {
   referenceDate: Date;
@@ -8,7 +8,9 @@ interface CalendarContextType {
   setSelectedDate: (d: Date | null) => void;
 }
 
-const CalendarContext = createContext<CalendarContextType | undefined>(undefined);
+const CalendarContext = createContext<CalendarContextType | undefined>(
+  undefined,
+);
 
 export function CalendarProvider({ children }: { children: React.ReactNode }) {
   const [referenceDate, setReferenceDate] = useState<Date>(new Date());

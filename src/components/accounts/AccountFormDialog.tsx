@@ -1,77 +1,127 @@
 "use client";
-import { useEffect } from 'react'
-import { useForm, Controller } from 'react-hook-form'
-import { NumericFormat } from 'react-number-format'
-import { zodResolver } from '@hookform/resolvers/zod'
-import * as z from 'zod'
-import { Landmark, Smartphone, Banknote } from 'lucide-react'
-import type { Account } from '@/types/domain'
-import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog'
-import { Input } from '@/components/ui/input'
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
-import { FieldWrapper } from '@/components/shared/FieldWrapper'
-import { formatRupiah } from '@/lib/utils'
+import { useEffect } from "react";
+import { useForm, Controller } from "react-hook-form";
+import { NumericFormat } from "react-number-format";
+import { zodResolver } from "@hookform/resolvers/zod";
+import * as z from "zod";
+import { Landmark, Smartphone, Banknote } from "lucide-react";
+import type { Account } from "@/types/domain";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
+import { Input } from "@/components/ui/input";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { FieldWrapper } from "@/components/shared/FieldWrapper";
+import { formatRupiah } from "@/lib/utils";
 
 const formSchema = z.object({
-  name: z.string().min(1, 'Nama wajib diisi'),
-  type: z.enum(['bank', 'e_wallet', 'cash']),
-  opening_balance: z.number().min(0, 'Opening Balance tidak boleh negatif'),
-})
+  name: z.string().min(1, "Nama wajib diisi"),
+  type: z.enum(["bank", "e_wallet", "cash"]),
+  opening_balance: z.number().min(0, "Opening Balance tidak boleh negatif"),
+});
 
-type FormValues = z.infer<typeof formSchema>
+type FormValues = z.infer<typeof formSchema>;
 
 interface AccountFormDialogProps {
-  open: boolean
-  onOpenChange: (open: boolean) => void
-  account?: Account | null
-  onSuccess: (data: FormValues) => void
+  open: boolean;
+  onOpenChange: (open: boolean) => void;
+  account?: Account | null;
+  onSuccess: (data: FormValues) => void;
 }
 
-export function AccountFormDialog({ open, onOpenChange, account, onSuccess }: AccountFormDialogProps) {
-  const isEdit = !!account
+export function AccountFormDialog({
+  open,
+  onOpenChange,
+  account,
+  onSuccess,
+}: AccountFormDialogProps) {
+  const isEdit = !!account;
 
-  const { register, handleSubmit, reset, setValue, watch, control, formState: { errors } } = useForm<FormValues>({
+  const {
+    register,
+    handleSubmit,
+    reset,
+    setValue,
+    watch,
+    control,
+    formState: { errors },
+  } = useForm<FormValues>({
     resolver: zodResolver(formSchema),
-    defaultValues: { name: '', type: 'bank', opening_balance: 0 },
-  })
+    defaultValues: { name: "", type: "bank", opening_balance: 0 },
+  });
 
-  const typeValue = watch('type')
+  const typeValue = watch("type");
 
   useEffect(() => {
     if (open) {
-      reset(account
-        ? { name: account.name, type: account.type, opening_balance: account.opening_balance }
-        : { name: '', type: 'bank', opening_balance: 0 }
-      )
+      reset(
+        account
+          ? {
+              name: account.name,
+              type: account.type,
+              opening_balance: account.opening_balance,
+            }
+          : { name: "", type: "bank", opening_balance: 0 },
+      );
     }
-  }, [open, account, reset])
+  }, [open, account, reset]);
 
   const onSubmit = (data: FormValues) => {
-    onSuccess(data)
-    onOpenChange(false)
-  }
+    onSuccess(data);
+    onOpenChange(false);
+  };
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent id="account-form-dialog">
         <DialogHeader>
-          <DialogTitle>{isEdit ? 'Edit Account' : 'Tambah Account'}</DialogTitle>
+          <DialogTitle>
+            {isEdit ? "Edit Account" : "Tambah Account"}
+          </DialogTitle>
           <DialogDescription>
-            {isEdit ? 'Ubah informasi Account Anda.' : 'Tambahkan Account baru untuk mencatat transaksi.'}
+            {isEdit
+              ? "Ubah informasi Account Anda."
+              : "Tambahkan Account baru untuk mencatat transaksi."}
           </DialogDescription>
         </DialogHeader>
 
-        <form id="account-form" onSubmit={handleSubmit(onSubmit)} className="space-y-4">
-          <FieldWrapper label="Nama Account" error={errors.name?.message} htmlFor="input-account-name">
+        <form
+          id="account-form"
+          onSubmit={handleSubmit(onSubmit)}
+          className="space-y-4"
+        >
+          <FieldWrapper
+            label="Nama Account"
+            error={errors.name?.message}
+            htmlFor="input-account-name"
+          >
             <Input
               id="input-account-name"
               placeholder="Mis. BCA Tabungan, GoPay, Dompet"
-              {...register('name')}
+              {...register("name")}
             />
           </FieldWrapper>
 
-          <FieldWrapper label="Tipe Account" error={errors.type?.message} htmlFor="select-account-type">
-            <Select value={typeValue} onValueChange={v => setValue('type', v as FormValues['type'])}>
+          <FieldWrapper
+            label="Tipe Account"
+            error={errors.type?.message}
+            htmlFor="select-account-type"
+          >
+            <Select
+              value={typeValue}
+              onValueChange={(v) => setValue("type", v as FormValues["type"])}
+            >
               <SelectTrigger id="select-account-type">
                 <SelectValue placeholder="Pilih tipe" />
               </SelectTrigger>
@@ -98,7 +148,11 @@ export function AccountFormDialog({ open, onOpenChange, account, onSuccess }: Ac
           <FieldWrapper
             label="Opening Balance"
             error={errors.opening_balance?.message}
-            description={isEdit ? 'Opening Balance tidak dapat diubah. Gunakan Reconciliation jika saldo tidak sesuai.' : 'Saldo awal Account saat pertama kali dibuat.'}
+            description={
+              isEdit
+                ? "Opening Balance tidak dapat diubah. Gunakan Reconciliation jika saldo tidak sesuai."
+                : "Saldo awal Account saat pertama kali dibuat."
+            }
             htmlFor="input-opening-balance"
           >
             {isEdit ? (
@@ -110,7 +164,9 @@ export function AccountFormDialog({ open, onOpenChange, account, onSuccess }: Ac
               />
             ) : (
               <div className="relative">
-                <span className="absolute left-3 top-1/2 -translate-y-1/2 text-sm text-muted-foreground">Rp</span>
+                <span className="absolute left-3 top-1/2 -translate-y-1/2 text-sm text-muted-foreground">
+                  Rp
+                </span>
                 <Controller
                   name="opening_balance"
                   control={control}
@@ -122,8 +178,10 @@ export function AccountFormDialog({ open, onOpenChange, account, onSuccess }: Ac
                       placeholder="0"
                       thousandSeparator="."
                       decimalSeparator=","
-                      value={field.value ?? ''}
-                      onValueChange={(values) => field.onChange(values.floatValue ?? 0)}
+                      value={field.value ?? ""}
+                      onValueChange={(values) =>
+                        field.onChange(values.floatValue ?? 0)
+                      }
                       onBlur={field.onBlur}
                       min={0}
                     />
@@ -153,5 +211,5 @@ export function AccountFormDialog({ open, onOpenChange, account, onSuccess }: Ac
         </form>
       </DialogContent>
     </Dialog>
-  )
+  );
 }
