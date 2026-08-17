@@ -110,103 +110,6 @@ export function TransactionsPage() {
   const updateTransaction = useUpdateTransaction();
   const deleteTransaction = useDeleteTransaction();
 
-  const handleSubmit = async (data?: TransactionFormData) => {
-    if (!data || !user) return;
-
-    if (editingTransaction) {
-      if (editingTransaction.transfer_pair_id) {
-        await updateTransaction.mutateAsync({
-          id: editingTransaction.id,
-          amount: data.amount,
-          date: data.date,
-          notes: data.notes,
-        });
-        await updateTransaction.mutateAsync({
-          id: editingTransaction.transfer_pair_id,
-          amount: data.amount,
-          date: data.date,
-        });
-        queryClient.invalidateQueries({ queryKey: ["transactions", user.id] });
-        queryClient.invalidateQueries({ queryKey: ["accounts", user.id] });
-      } else {
-        await updateTransaction.mutateAsync({
-          id: editingTransaction.id,
-          account_id: data.account_id,
-          category_id: data.category_id!,
-          amount: data.amount,
-          date: data.date,
-          notes: data.notes,
-        });
-      }
-      setEditingTransaction(undefined);
-      return;
-    }
-
-    if (data.type === "transfer") {
-      const { data: tx1 } = await supabase
-        .from("transactions")
-        .insert([
-          {
-            user_id: user.id,
-            account_id: data.account_id,
-            category_id: categories.find((c) => c.type === "outflow")?.id ?? "",
-            amount: data.amount,
-            type: "outflow",
-            date: data.date,
-            notes:
-              data.notes ||
-              `Transfer ke ${accounts.find((a) => a.id === data.to_account_id)?.name}`,
-            is_adjustment: false,
-          },
-        ])
-        .select()
-        .single();
-
-      if (!tx1) return;
-
-      const { data: tx2 } = await supabase
-        .from("transactions")
-        .insert([
-          {
-            user_id: user.id,
-            account_id: data.to_account_id!,
-            category_id: categories.find((c) => c.type === "inflow")?.id ?? "",
-            amount: data.amount,
-            type: "inflow",
-            date: data.date,
-            notes:
-              data.notes ||
-              `Transfer dari ${accounts.find((a) => a.id === data.account_id)?.name}`,
-            is_adjustment: false,
-            transfer_pair_id: tx1.id,
-          },
-        ])
-        .select()
-        .single();
-
-      if (tx2) {
-        await supabase
-          .from("transactions")
-          .update({ transfer_pair_id: tx2.id })
-          .eq("id", tx1.id);
-      }
-
-      queryClient.invalidateQueries({ queryKey: ["transactions", user.id] });
-      queryClient.invalidateQueries({ queryKey: ["accounts", user.id] });
-    } else {
-      await createTransaction.mutateAsync({
-        account_id: data.account_id,
-        category_id: data.category_id!,
-        amount: data.amount,
-        type: data.type,
-        date: data.date,
-        notes: data.notes,
-        is_adjustment: false,
-        transfer_pair_id: null,
-      });
-    }
-  };
-
   const handleDelete = async (id: string) => {
     if (!confirm("Hapus transaksi ini?")) return;
     await deleteTransaction.mutateAsync(id);
@@ -477,7 +380,7 @@ export function TransactionsPage() {
             <Select value={filterAccount} onValueChange={setFilterAccount}>
               <SelectTrigger
                 id="filter-account"
-                className="h-9 w-40 text-xs font-space-grotesk font-bold"
+                className="h-9 w-[calc(50%-6px)] sm:w-40 text-xs font-space-grotesk font-bold"
               >
                 <SelectValue placeholder="Semua Akun" />
               </SelectTrigger>
@@ -495,7 +398,7 @@ export function TransactionsPage() {
             <Select value={filterCategory} onValueChange={setFilterCategory}>
               <SelectTrigger
                 id="filter-category"
-                className="h-9 w-40 text-xs font-space-grotesk font-bold"
+                className="h-9 w-[calc(50%-6px)] sm:w-40 text-xs font-space-grotesk font-bold"
               >
                 <SelectValue placeholder="Semua Kategori" />
               </SelectTrigger>
@@ -518,7 +421,7 @@ export function TransactionsPage() {
             >
               <SelectTrigger
                 id="filter-type"
-                className="h-9 w-36 text-xs font-space-grotesk font-bold"
+                className="h-9 w-[calc(50%-6px)] sm:w-36 text-xs font-space-grotesk font-bold"
               >
                 <SelectValue placeholder="Semua Tipe" />
               </SelectTrigger>
@@ -541,7 +444,7 @@ export function TransactionsPage() {
                     setSelectedDate(new Date(e.target.value));
                   }
                 }}
-                className="h-9 w-38 text-xs font-space-mono font-bold"
+                className="h-9 w-[calc(50%-6px)] sm:w-38 text-xs font-space-mono font-bold"
               />
             )}
 
@@ -923,20 +826,6 @@ export function TransactionsPage() {
           </div>
         )}
       </div>
-
-      {/* Create/Edit Transaction Dialog */}
-      <TransactionFormDialog
-        open={showForm}
-        onOpenChange={(open) => {
-          setShowForm(open);
-          if (!open) setTimeout(() => setEditingTransaction(undefined), 300);
-        }}
-        transaction={editingTransaction}
-        defaultDate={selectedDateStr}
-        accounts={accounts}
-        categories={categories}
-        onSuccess={handleSubmit}
-      />
     </div>
   );
 }

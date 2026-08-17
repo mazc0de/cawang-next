@@ -48,6 +48,7 @@ export function TopNavbar() {
   const sidebarContext = useSidebarContext();
   const isSidebarCollapsed = sidebarContext?.isCollapsed ?? false;
   const toggleSidebar = sidebarContext?.toggleSidebar;
+  const toggleMobileSidebar = sidebarContext?.toggleMobileSidebar;
 
   const txContext = useTransactionsContext();
   const selectedDate = txContext?.selectedDate ?? new Date();
@@ -88,83 +89,123 @@ export function TopNavbar() {
         .replace(/\b\w/g, (l) => l.toUpperCase());
 
   return (
-    <header className="flex h-24 w-full items-center justify-between bg-transparent px-6 lg:px-10 mt-2 shrink-0">
+    <header className="flex flex-col sm:flex-row sm:h-24 w-full items-start sm:items-center justify-between bg-transparent px-5 sm:px-8 lg:px-10 pt-5 pb-3 sm:py-0 mt-1 sm:mt-2 shrink-0 gap-3.5 sm:gap-4">
       {/* Page Title & Subtitle */}
-      <div className="flex items-center gap-3.5">
-        {toggleSidebar && (
-          <Tooltip>
-            <TooltipTrigger asChild>
-              <button
-                id="btn-navbar-toggle-sidebar"
-                onClick={toggleSidebar}
-                type="button"
-                className="h-10 w-10 rounded-xl bg-white border-2 border-ink shadow-[2px_2px_0px_0px_#111111] hover:bg-canary hover:translate-x-[-1px] hover:translate-y-[-1px] hover:shadow-hard-sm active:translate-x-[1px] active:translate-y-[1px] active:shadow-none flex items-center justify-center text-ink transition-all cursor-pointer shrink-0"
-              >
-                {isSidebarCollapsed ? (
-                  <PanelLeftOpen className="h-5 w-5" strokeWidth={2.5} />
-                ) : (
-                  <PanelLeftClose className="h-5 w-5" strokeWidth={2.5} />
-                )}
-              </button>
-            </TooltipTrigger>
-            <TooltipContent
-              side="bottom"
-              className="font-space-grotesk font-bold text-xs bg-ink text-canvas border-2 border-ink shadow-hard-sm px-3 py-1.5 rounded-lg z-50"
-            >
-              {isSidebarCollapsed ? "Buka Sidebar" : "Tutup Sidebar"}
-            </TooltipContent>
-          </Tooltip>
-        )}
+      <div className="flex items-center justify-between w-full sm:w-auto gap-3">
+        <div className="flex items-center gap-3">
+          {/* Mobile Toggle Button */}
+          <button
+            id="btn-navbar-toggle-mobile"
+            onClick={toggleMobileSidebar}
+            type="button"
+            className="md:hidden h-10 w-10 rounded-xl bg-white border-2 border-ink shadow-[2px_2px_0px_0px_#111111] hover:bg-canary active:translate-x-[1px] active:translate-y-[1px] active:shadow-none flex items-center justify-center text-ink transition-all cursor-pointer shrink-0"
+            title="Menu"
+          >
+            <PanelLeftOpen className="h-5 w-5" strokeWidth={2.5} />
+          </button>
 
-        <div className="flex flex-col gap-1">
-          <h2 className="font-archivo-black text-3xl sm:text-4xl text-ink leading-none">
-            {pageTitle}
-          </h2>
-        {isOverview && (
-          <p className="text-sm font-space-grotesk text-ink/70 font-normal">
-            Financial Cycle: <span className="font-semibold">{cycleRange}</span>
-          </p>
-        )}
-        {isTransactions && (
-          <p className="text-sm font-space-grotesk text-ink/70 font-medium">
-            {formatDate(selectedDate, "EEEE, d MMMM yyyy")}
-          </p>
-        )}
-        {isBudget && (
-          <p className="text-sm font-space-grotesk text-ink/70 font-medium">
-            Kelola batas pengeluaran kategori untuk siklus ini
-          </p>
-        )}
-        {isCalendar && (
-          <p className="text-sm font-space-grotesk text-ink/70 font-medium">
-            Kalender arus kas harian & proyeksi tagihan rutin
-          </p>
-        )}
-        {isRecurring && (
-          <p className="text-sm font-space-grotesk text-ink/70 font-medium">
-            Jadwal transaksi rutin, tagihan langganan & cicilan
-          </p>
-        )}
-        {isCategories && (
-          <p className="text-sm font-space-grotesk text-ink/70 font-medium">
-            Kelola label & ikon kategori pemasukan dan pengeluaran
-          </p>
-        )}
-        {pathname === "/dashboard/settings" && (
-          <p className="text-sm font-space-grotesk text-ink/70 font-medium">
-            Kelola profil akun & konfigurasi siklus finansial
-          </p>
-        )}
+          {/* Desktop Toggle Button */}
+          {toggleSidebar && (
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <button
+                  id="btn-navbar-toggle-sidebar"
+                  onClick={toggleSidebar}
+                  type="button"
+                  className="hidden md:flex h-10 w-10 rounded-xl bg-white border-2 border-ink shadow-[2px_2px_0px_0px_#111111] hover:bg-canary hover:translate-x-[-1px] hover:translate-y-[-1px] hover:shadow-hard-sm active:translate-x-[1px] active:translate-y-[1px] active:shadow-none items-center justify-center text-ink transition-all cursor-pointer shrink-0"
+                >
+                  {isSidebarCollapsed ? (
+                    <PanelLeftOpen className="h-5 w-5" strokeWidth={2.5} />
+                  ) : (
+                    <PanelLeftClose className="h-5 w-5" strokeWidth={2.5} />
+                  )}
+                </button>
+              </TooltipTrigger>
+              <TooltipContent
+                side="bottom"
+                className="font-space-grotesk font-bold text-xs bg-white text-ink border-2 border-ink shadow-hard-sm px-3 py-1.5 rounded-lg z-50"
+              >
+                {isSidebarCollapsed ? "Buka Sidebar" : "Tutup Sidebar"}
+              </TooltipContent>
+            </Tooltip>
+          )}
+
+          <div className="flex flex-col gap-0.5 sm:gap-1">
+            <h2 className="font-archivo-black text-2xl sm:text-3xl lg:text-4xl text-ink leading-none">
+              {pageTitle}
+            </h2>
+            {isOverview && (
+              <p className="text-xs sm:text-sm font-space-grotesk text-ink/70 font-normal">
+                Financial Cycle: <span className="font-semibold">{cycleRange}</span>
+              </p>
+            )}
+            {isTransactions && (
+              <p className="text-xs sm:text-sm font-space-grotesk text-ink/70 font-medium">
+                {formatDate(selectedDate, "EEEE, d MMMM yyyy")}
+              </p>
+            )}
+            {isBudget && (
+              <p className="text-xs sm:text-sm font-space-grotesk text-ink/70 font-medium line-clamp-1">
+                Kelola batas pengeluaran kategori untuk siklus ini
+              </p>
+            )}
+            {isCalendar && (
+              <p className="text-xs sm:text-sm font-space-grotesk text-ink/70 font-medium line-clamp-1">
+                Kalender arus kas harian & proyeksi tagihan rutin
+              </p>
+            )}
+            {isRecurring && (
+              <p className="text-xs sm:text-sm font-space-grotesk text-ink/70 font-medium line-clamp-1">
+                Jadwal transaksi rutin, tagihan langganan & cicilan
+              </p>
+            )}
+            {isCategories && (
+              <p className="text-xs sm:text-sm font-space-grotesk text-ink/70 font-medium line-clamp-1">
+                Kelola label & ikon kategori pemasukan dan pengeluaran
+              </p>
+            )}
+            {pathname === "/dashboard/settings" && (
+              <p className="text-xs sm:text-sm font-space-grotesk text-ink/70 font-medium line-clamp-1">
+                Kelola profil akun & konfigurasi siklus finansial
+              </p>
+            )}
+          </div>
+        </div>
+
+        {/* Profile button on mobile top row */}
+        <div className="sm:hidden">
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <button className="flex items-center justify-center h-10 w-10 rounded-full bg-mint border-2 border-ink shadow-hard-sm active:translate-y-0.5 transition-all outline-none cursor-pointer select-none">
+                <span className="font-bold text-ink text-xs font-space-mono">
+                  {initials}
+                </span>
+              </button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent
+              className="w-48 rounded-[16px] border-2 border-ink shadow-hard-md mt-2 p-2 bg-white"
+              align="end"
+            >
+              <DropdownMenuItem
+                id="btn-signout-mobile"
+                className="cursor-pointer font-bold text-ink hover:bg-canvas rounded-xl focus:bg-canvas focus:text-ink flex items-center gap-2 px-3 py-2 font-space-grotesk"
+                onClick={signOut}
+              >
+                <LogOut className="h-4 w-4" strokeWidth={2.5} />
+                Sign out
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
         </div>
       </div>
 
       {/* Right Controls */}
-      <div className="flex items-center gap-3 sm:gap-4">
+      <div className="flex items-center justify-between sm:justify-end w-full sm:w-auto gap-2 sm:gap-4 overflow-x-auto pb-1 sm:pb-0 scrollbar-none">
         {/* Specific controls for Transactions Page */}
         {isTransactions && (
           <>
             {/* Date Navigator */}
-            <div className="flex items-center gap-1 bg-white rounded-full border-2 border-ink p-1 shadow-hard-sm">
+            <div className="flex items-center gap-1 bg-white rounded-full border-2 border-ink p-1 shadow-hard-sm shrink-0">
               <button
                 className="h-7 w-7 sm:h-8 sm:w-8 rounded-full flex items-center justify-center hover:bg-canvas text-ink transition-colors cursor-pointer"
                 onClick={() => setSelectedDate?.((prev) => subDays(prev, 1))}
@@ -190,7 +231,7 @@ export function TopNavbar() {
             {/* Catat Transaksi Button */}
             <button
               id="btn-navbar-add-transaction"
-              className="btn-neubrutalism bg-hot-pink text-white px-3.5 sm:px-5 py-2 sm:py-2.5 text-xs sm:text-sm font-space-grotesk flex items-center gap-1.5 sm:gap-2"
+              className="btn-neubrutalism bg-hot-pink text-white px-3 sm:px-5 py-2 sm:py-2.5 text-xs sm:text-sm font-space-grotesk flex items-center gap-1.5 sm:gap-2 shrink-0"
               onClick={() => {
                 setEditingTransaction?.(undefined);
                 setShowForm?.(true);
@@ -209,7 +250,7 @@ export function TopNavbar() {
             <button
               id="btn-navbar-open-wizard"
               onClick={() => openBudgetWizardModal?.()}
-              className="btn-neubrutalism bg-white text-ink px-3 sm:px-4 py-2 sm:py-2.5 text-xs font-space-grotesk flex items-center gap-1.5"
+              className="btn-neubrutalism bg-white text-ink px-2.5 sm:px-4 py-2 sm:py-2.5 text-xs font-space-grotesk flex items-center gap-1.5 shrink-0"
             >
               <Sparkles className="h-4 w-4 text-hot-pink" strokeWidth={2.5} />
               <span className="hidden sm:inline">Budgeting Wizard</span>
@@ -218,7 +259,7 @@ export function TopNavbar() {
             <button
               id="btn-navbar-add-budget"
               onClick={() => openAddBudgetModal?.()}
-              className="btn-neubrutalism bg-hot-pink text-white px-3.5 sm:px-5 py-2 sm:py-2.5 text-xs sm:text-sm font-space-grotesk flex items-center gap-1.5"
+              className="btn-neubrutalism bg-hot-pink text-white px-3 sm:px-5 py-2 sm:py-2.5 text-xs sm:text-sm font-space-grotesk flex items-center gap-1.5 shrink-0"
             >
               <Plus className="h-4 w-4" strokeWidth={3} />
               <span className="hidden sm:inline">Tambah Budget</span>
@@ -231,7 +272,7 @@ export function TopNavbar() {
         {isCalendar && (
           <>
             {/* Month Navigator */}
-            <div className="flex items-center gap-1 bg-white rounded-full border-2 border-ink p-1 shadow-hard-sm">
+            <div className="flex items-center gap-1 bg-white rounded-full border-2 border-ink p-1 shadow-hard-sm shrink-0">
               <button
                 id="btn-prev-month"
                 className="h-7 w-7 sm:h-8 sm:w-8 rounded-full flex items-center justify-center hover:bg-canvas text-ink transition-colors cursor-pointer"
@@ -268,7 +309,7 @@ export function TopNavbar() {
             <button
               id="btn-navbar-add-rule"
               onClick={() => openAddRuleModal?.()}
-              className="btn-neubrutalism bg-hot-pink text-white px-3.5 sm:px-5 py-2 sm:py-2.5 text-xs sm:text-sm font-space-grotesk flex items-center gap-1.5"
+              className="btn-neubrutalism bg-hot-pink text-white px-3 sm:px-5 py-2 sm:py-2.5 text-xs sm:text-sm font-space-grotesk flex items-center gap-1.5 shrink-0"
             >
               <Plus className="h-4 w-4" strokeWidth={3} />
               <span className="hidden sm:inline">Tambah Rule</span>
@@ -283,7 +324,7 @@ export function TopNavbar() {
             <button
               id="btn-navbar-add-category"
               onClick={() => openAddCategoryModal?.()}
-              className="btn-neubrutalism bg-hot-pink text-white px-3.5 sm:px-5 py-2 sm:py-2.5 text-xs sm:text-sm font-space-grotesk flex items-center gap-1.5"
+              className="btn-neubrutalism bg-hot-pink text-white px-3 sm:px-5 py-2 sm:py-2.5 text-xs sm:text-sm font-space-grotesk flex items-center gap-1.5 shrink-0"
             >
               <Plus className="h-4 w-4" strokeWidth={3} />
               <span className="hidden sm:inline">Tambah Kategori</span>
@@ -292,29 +333,31 @@ export function TopNavbar() {
           </>
         )}
 
-        {/* Profile */}
-        <DropdownMenu>
-          <DropdownMenuTrigger asChild>
-            <button className="flex items-center justify-center h-11 w-11 sm:h-12 sm:w-12 rounded-full bg-mint border-2 border-ink shadow-hard-sm hover:shadow-hard-md hover:-translate-y-0.5 transition-all outline-none cursor-pointer select-none">
-              <span className="font-bold text-ink text-sm font-space-mono">
-                {initials}
-              </span>
-            </button>
-          </DropdownMenuTrigger>
-          <DropdownMenuContent
-            className="w-48 rounded-[16px] border-2 border-ink shadow-hard-md mt-2 p-2 bg-white"
-            align="end"
-          >
-            <DropdownMenuItem
-              id="btn-signout"
-              className="cursor-pointer font-bold text-ink hover:bg-canvas rounded-xl focus:bg-canvas focus:text-ink flex items-center gap-2 px-3 py-2 font-space-grotesk"
-              onClick={signOut}
+        {/* Desktop Profile */}
+        <div className="hidden sm:block shrink-0">
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <button className="flex items-center justify-center h-11 w-11 sm:h-12 sm:w-12 rounded-full bg-mint border-2 border-ink shadow-hard-sm hover:shadow-hard-md hover:-translate-y-0.5 transition-all outline-none cursor-pointer select-none">
+                <span className="font-bold text-ink text-sm font-space-mono">
+                  {initials}
+                </span>
+              </button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent
+              className="w-48 rounded-[16px] border-2 border-ink shadow-hard-md mt-2 p-2 bg-white"
+              align="end"
             >
-              <LogOut className="h-4 w-4" strokeWidth={2.5} />
-              Sign out
-            </DropdownMenuItem>
-          </DropdownMenuContent>
-        </DropdownMenu>
+              <DropdownMenuItem
+                id="btn-signout"
+                className="cursor-pointer font-bold text-ink hover:bg-canvas rounded-xl focus:bg-canvas focus:text-ink flex items-center gap-2 px-3 py-2 font-space-grotesk"
+                onClick={signOut}
+              >
+                <LogOut className="h-4 w-4" strokeWidth={2.5} />
+                Sign out
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
+        </div>
       </div>
     </header>
   );

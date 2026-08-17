@@ -90,21 +90,21 @@ function DayCell({
       type="button"
       onClick={() => onSelect(date)}
       className={cn(
-        "min-h-[112px] p-2.5 text-left rounded-[16px] border-2 transition-all flex flex-col justify-between cursor-pointer relative group",
+        "min-h-[70px] sm:min-h-[112px] p-1 sm:p-2.5 text-left rounded-[10px] sm:rounded-[16px] border-2 transition-all flex flex-col justify-between cursor-pointer relative group",
         !isInCycle
           ? "opacity-30 bg-canvas/60 border-ink/15"
           : "bg-white hover:bg-canvas/80 border-ink shadow-hard-sm hover:shadow-hard-md hover:-translate-y-0.5",
         today && "bg-canary border-ink shadow-hard-md ring-2 ring-ink",
         isSelected &&
           !today &&
-          "ring-4 ring-hot-pink border-ink shadow-hard-md bg-canvas",
+          "ring-2 sm:ring-4 ring-hot-pink border-ink shadow-hard-md bg-canvas",
       )}
     >
       {/* Top Header of Day Cell */}
       <div className="flex items-center justify-between w-full">
         <span
           className={cn(
-            "text-xs font-space-mono font-bold w-7 h-7 flex items-center justify-center rounded-full border-2 border-ink shadow-[1px_1px_0px_0px_#111]",
+            "text-[10px] sm:text-xs font-space-mono font-bold w-5 h-5 sm:w-7 sm:h-7 flex items-center justify-center rounded-full border border-ink sm:border-2 shadow-[1px_1px_0px_0px_#111]",
             today
               ? "bg-ink text-white"
               : isSelected
@@ -115,17 +115,17 @@ function DayCell({
           {format(date, "d")}
         </span>
 
-        <div className="flex items-center gap-1">
+        <div className="flex items-center gap-0.5 sm:gap-1">
           {hasProjection && (
             <span
               title="Memiliki proyeksi recurring rule"
-              className="w-4 h-4 rounded-full bg-lilac border border-ink flex items-center justify-center text-ink shadow-[1px_1px_0px_0px_#111]"
+              className="w-3.5 h-3.5 sm:w-4 sm:h-4 rounded-full bg-lilac border border-ink flex items-center justify-center text-ink shadow-[1px_1px_0px_0px_#111]"
             >
-              <RefreshCw className="h-2 w-2" />
+              <RefreshCw className="h-1.5 w-1.5 sm:h-2 sm:w-2" />
             </span>
           )}
           {dayItems.length > 0 && (
-            <span className="text-[11px] font-space-mono font-bold text-ink/70 px-1.5 py-0.5 rounded-md bg-canvas border border-ink/20">
+            <span className="text-[9px] sm:text-[11px] font-space-mono font-bold text-ink/70 px-1 sm:px-1.5 py-0.2 sm:py-0.5 rounded-md bg-canvas border border-ink/20">
               {dayItems.length}
             </span>
           )}
@@ -134,26 +134,26 @@ function DayCell({
 
       {/* Amounts Summary in Day Cell */}
       {dayItems.length > 0 ? (
-        <div className="space-y-1.5 mt-2 w-full">
+        <div className="space-y-1 sm:space-y-1.5 mt-1 sm:mt-2 w-full">
           {inflow > 0 && (
-            <div className="text-[11px] font-space-mono font-bold truncate px-2 py-1 rounded-[8px] border-2 border-ink bg-mint text-ink shadow-[1px_1px_0px_0px_#111] flex items-center justify-between gap-1">
+            <div className="text-[8px] sm:text-[11px] font-space-mono font-bold truncate px-1 sm:px-2 py-0.5 sm:py-1 rounded-[6px] sm:rounded-[8px] border sm:border-2 border-ink bg-mint text-ink shadow-[1px_1px_0px_0px_#111] flex items-center justify-between gap-0.5 sm:gap-1">
               <span className="flex items-center gap-0.5 truncate">
-                <ArrowUpRight className="h-3 w-3 shrink-0" strokeWidth={3} />
+                <ArrowUpRight className="h-2.5 w-2.5 sm:h-3 sm:w-3 shrink-0" strokeWidth={3} />
                 <span className="truncate">+{formatRupiah(inflow, true)}</span>
               </span>
             </div>
           )}
           {outflow > 0 && (
-            <div className="text-[11px] font-space-mono font-bold truncate px-2 py-1 rounded-[8px] border-2 border-ink bg-coral text-ink shadow-[1px_1px_0px_0px_#111] flex items-center justify-between gap-1">
+            <div className="text-[8px] sm:text-[11px] font-space-mono font-bold truncate px-1 sm:px-2 py-0.5 sm:py-1 rounded-[6px] sm:rounded-[8px] border sm:border-2 border-ink bg-coral text-ink shadow-[1px_1px_0px_0px_#111] flex items-center justify-between gap-0.5 sm:gap-1">
               <span className="flex items-center gap-0.5 truncate">
-                <ArrowDownRight className="h-3 w-3 shrink-0" strokeWidth={3} />
+                <ArrowDownRight className="h-2.5 w-2.5 sm:h-3 sm:w-3 shrink-0" strokeWidth={3} />
                 <span className="truncate">-{formatRupiah(outflow, true)}</span>
               </span>
             </div>
           )}
         </div>
       ) : (
-        <div className="h-4" />
+        <div className="h-2 sm:h-4" />
       )}
     </button>
   );
@@ -284,103 +284,6 @@ export function CalendarPage() {
     }
   };
 
-  const handleTransactionSubmit = async (data?: TransactionFormData) => {
-    if (!data || !user) return;
-
-    if (editingTransaction) {
-      if (editingTransaction.transfer_pair_id) {
-        await updateTransaction.mutateAsync({
-          id: editingTransaction.id,
-          amount: data.amount,
-          date: data.date,
-          notes: data.notes,
-        });
-        await updateTransaction.mutateAsync({
-          id: editingTransaction.transfer_pair_id,
-          amount: data.amount,
-          date: data.date,
-        });
-        queryClient.invalidateQueries({ queryKey: ["transactions", user.id] });
-        queryClient.invalidateQueries({ queryKey: ["accounts", user.id] });
-      } else {
-        await updateTransaction.mutateAsync({
-          id: editingTransaction.id,
-          account_id: data.account_id,
-          category_id: data.category_id!,
-          amount: data.amount,
-          date: data.date,
-          notes: data.notes,
-        });
-      }
-      setEditingTransaction(undefined);
-      return;
-    }
-
-    if (data.type === "transfer") {
-      const { data: tx1 } = await supabase
-        .from("transactions")
-        .insert([
-          {
-            user_id: user.id,
-            account_id: data.account_id,
-            category_id:
-              categories.find((c) => c.type === "outflow")?.id ?? "",
-            amount: data.amount,
-            type: "outflow",
-            date: data.date,
-            notes:
-              data.notes ||
-              `Transfer ke ${accounts.find((a) => a.id === data.to_account_id)?.name}`,
-            is_adjustment: false,
-          },
-        ])
-        .select()
-        .single();
-
-      if (!tx1) return;
-
-      const { data: tx2 } = await supabase
-        .from("transactions")
-        .insert([
-          {
-            user_id: user.id,
-            account_id: data.to_account_id!,
-            category_id:
-              categories.find((c) => c.type === "inflow")?.id ?? "",
-            amount: data.amount,
-            type: "inflow",
-            date: data.date,
-            notes:
-              data.notes ||
-              `Transfer dari ${accounts.find((a) => a.id === data.account_id)?.name}`,
-            is_adjustment: false,
-            transfer_pair_id: tx1.id,
-          },
-        ])
-        .select()
-        .single();
-
-      if (tx2) {
-        await supabase
-          .from("transactions")
-          .update({ transfer_pair_id: tx2.id })
-          .eq("id", tx1.id);
-      }
-
-      queryClient.invalidateQueries({ queryKey: ["transactions", user.id] });
-      queryClient.invalidateQueries({ queryKey: ["accounts", user.id] });
-    } else {
-      await createTransaction.mutateAsync({
-        account_id: data.account_id,
-        category_id: data.category_id!,
-        amount: data.amount,
-        type: data.type,
-        date: data.date,
-        notes: data.notes,
-      });
-    }
-  };
-
   const selectedItems = selectedDate
     ? getTransactionsForDay(selectedDate, calendarItems)
     : [];
@@ -434,14 +337,14 @@ export function CalendarPage() {
       </div>
 
       {/* 2. FULL-WIDTH CALENDAR VIEW */}
-      <div className="card-neubrutalism bg-white p-5 sm:p-7 space-y-4 w-full">
+      <div className="card-neubrutalism bg-white p-3 sm:p-5 md:p-7 space-y-3 sm:space-y-4 w-full">
         {/* Day of week headers */}
-        <div className="grid grid-cols-7 gap-2.5 text-center">
+        <div className="grid grid-cols-7 gap-1 sm:gap-2.5 text-center">
           {["Senin", "Selasa", "Rabu", "Kamis", "Jumat", "Sabtu", "Minggu"].map(
             (d) => (
               <div
                 key={d}
-                className="py-2.5 bg-canvas rounded-xl border-2 border-ink font-space-grotesk font-bold text-xs uppercase tracking-wider text-ink shadow-[2px_2px_0px_0px_#111]"
+                className="py-1.5 sm:py-2.5 bg-canvas rounded-lg sm:rounded-xl border-2 border-ink font-space-grotesk font-bold text-[10px] sm:text-xs uppercase tracking-wider text-ink shadow-[1px_1px_0px_0px_#111] sm:shadow-[2px_2px_0px_0px_#111]"
               >
                 <span className="hidden sm:inline">{d}</span>
                 <span className="sm:hidden">{d.slice(0, 3)}</span>
@@ -452,16 +355,16 @@ export function CalendarPage() {
 
         {/* Calendar Day Grid */}
         {txLoading ? (
-          <div className="grid grid-cols-7 gap-2.5">
+          <div className="grid grid-cols-7 gap-1 sm:gap-2.5">
             {Array.from({ length: 35 }).map((_, i) => (
               <div
                 key={i}
-                className="min-h-[112px] bg-canvas animate-pulse rounded-[16px] border-2 border-ink/10"
+                className="min-h-[70px] sm:min-h-[112px] bg-canvas animate-pulse rounded-[10px] sm:rounded-[16px] border-2 border-ink/10"
               />
             ))}
           </div>
         ) : (
-          <div className="grid grid-cols-7 gap-2.5">
+          <div className="grid grid-cols-7 gap-1 sm:gap-2.5">
             {allDays.map((day, i) => {
               const dayTime = day.getTime();
               const isInCycle =
@@ -629,24 +532,6 @@ export function CalendarPage() {
           </DialogFooter>
         </DialogContent>
       </Dialog>
-
-      {/* Create/Edit Transaction Dialog */}
-      <TransactionFormDialog
-        open={showForm}
-        onOpenChange={(open) => {
-          setShowForm(open);
-          if (!open) setTimeout(() => setEditingTransaction(undefined), 300);
-        }}
-        transaction={editingTransaction}
-        defaultDate={
-          selectedDate
-            ? format(selectedDate, "yyyy-MM-dd")
-            : format(new Date(), "yyyy-MM-dd")
-        }
-        accounts={accounts}
-        categories={categories}
-        onSuccess={handleTransactionSubmit}
-      />
     </div>
   );
 }

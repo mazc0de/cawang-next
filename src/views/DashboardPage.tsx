@@ -35,12 +35,14 @@ import { useCategories } from "@/hooks/useCategories";
 import { supabase } from "@/lib/supabase";
 import { useQueryClient } from "@tanstack/react-query";
 import type { Transaction, Budget } from "@/types/domain";
+import { useTransactionsContext } from "@/contexts/TransactionsContext";
 
 export function DashboardPage() {
   const { user } = useAuth();
   const queryClient = useQueryClient();
-  const [showForm, setShowForm] = useState(false);
-  const [editingTransaction, setEditingTransaction] = useState<Transaction | undefined>(undefined);
+  const txContext = useTransactionsContext();
+  const setShowForm = (open: boolean) => txContext?.setShowForm?.(open);
+  const setEditingTransaction = (tx: any) => txContext?.setEditingTransaction?.(tx);
 
   const todayStr = format(new Date(), "yyyy-MM-dd");
 
@@ -68,97 +70,6 @@ export function DashboardPage() {
 
   const cashFlow =
     (stats?.income_this_cycle ?? 0) - (stats?.expense_this_cycle ?? 0);
-
-  const handleTransactionSubmit = async (data?: TransactionFormData) => {
-    if (!data || !user) return;
-
-    if (editingTransaction) {
-      if (editingTransaction.transfer_pair_id) {
-        await updateTransaction.mutateAsync({
-          id: editingTransaction.id,
-          amount: data.amount,
-          date: data.date,
-          notes: data.notes,
-        });
-        await updateTransaction.mutateAsync({
-          id: editingTransaction.transfer_pair_id,
-          amount: data.amount,
-          date: data.date,
-        });
-      } else {
-        await updateTransaction.mutateAsync({
-          id: editingTransaction.id,
-          account_id: data.account_id,
-          category_id: data.category_id!,
-          amount: data.amount,
-          date: data.date,
-          notes: data.notes,
-        });
-      }
-      setEditingTransaction(undefined);
-      return;
-    }
-
-    if (data.type === "transfer") {
-      const { data: tx1 } = await supabase
-        .from("transactions")
-        .insert([
-          {
-            user_id: user.id,
-            account_id: data.account_id,
-            category_id:
-              categories.find((c) => c.type === "outflow")?.id ?? "",
-            amount: data.amount,
-            type: "outflow",
-            date: data.date,
-            notes: data.notes,
-            is_adjustment: false,
-          },
-        ])
-        .select()
-        .single();
-      if (!tx1) return;
-      const { data: tx2 } = await supabase
-        .from("transactions")
-        .insert([
-          {
-            user_id: user.id,
-            account_id: data.to_account_id!,
-            category_id:
-              categories.find((c) => c.type === "inflow")?.id ?? "",
-            amount: data.amount,
-            type: "inflow",
-            date: data.date,
-            notes: data.notes,
-            is_adjustment: false,
-            transfer_pair_id: tx1.id,
-          },
-        ])
-        .select()
-        .single();
-      if (tx2)
-        await supabase
-          .from("transactions")
-          .update({ transfer_pair_id: tx2.id })
-          .eq("id", tx1.id);
-      queryClient.invalidateQueries({ queryKey: ["transactions", user.id] });
-      queryClient.invalidateQueries({ queryKey: ["accounts", user.id] });
-      queryClient.invalidateQueries({
-        queryKey: ["dashboard_stats", user.id],
-      });
-    } else {
-      await createTransaction.mutateAsync({
-        account_id: data.account_id,
-        category_id: data.category_id!,
-        amount: data.amount,
-        type: data.type,
-        date: data.date,
-        notes: data.notes,
-        is_adjustment: false,
-        transfer_pair_id: null,
-      });
-    }
-  };
 
   const handleDeleteTransaction = async (id: string) => {
     if (!confirm("Hapus transaksi ini?")) return;
@@ -597,19 +508,6 @@ export function DashboardPage() {
           </div>
         )}
       </div>
-
-      <TransactionFormDialog
-        open={showForm}
-        onOpenChange={(open) => {
-          setShowForm(open);
-          if (!open) setTimeout(() => setEditingTransaction(undefined), 300);
-        }}
-        transaction={editingTransaction}
-        defaultDate={todayStr}
-        accounts={accounts}
-        categories={categories}
-        onSuccess={handleTransactionSubmit}
-      />
     </div>
   );
 }

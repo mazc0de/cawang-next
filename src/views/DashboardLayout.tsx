@@ -5,6 +5,8 @@ import { Loader2 } from "lucide-react";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { TopNavbar } from "@/components/layout/TopNavbar";
 import { CustomSidebar } from "@/components/layout/CustomSidebar";
+import { BottomNavbar } from "@/components/layout/BottomNavbar";
+import { GlobalTransactionDialog } from "@/components/transactions/GlobalTransactionDialog";
 
 import { TransactionsProvider } from "@/contexts/TransactionsContext";
 import { BudgetProvider } from "@/contexts/BudgetContext";
@@ -46,9 +48,11 @@ export function DashboardLayout({ children }: { children: React.ReactNode }) {
                     <CustomSidebar />
                     <div className="flex flex-col flex-1 overflow-hidden relative">
                       <TopNavbar />
-                      <main className="flex-1 overflow-y-auto px-6 lg:px-10 py-8 relative">
+                      <main className="flex-1 overflow-y-auto px-5 sm:px-8 lg:px-10 py-5 sm:py-8 pb-24 md:pb-8 relative">
                         <div className="mx-auto w-full max-w-7xl">{children}</div>
                       </main>
+                      <BottomNavbar />
+                      <GlobalTransactionDialog />
                     </div>
                   </div>
                 </CategoriesProvider>
