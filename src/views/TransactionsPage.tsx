@@ -84,16 +84,31 @@ export function TransactionsPage() {
   >("all");
   const [sortOrder, setSortOrder] = useState<"asc" | "desc">("desc");
 
-  // Fetch all user transactions so client-side search across all history is instant
-  const { data: transactions = [], isLoading } = useTransactions();
+  const isSearching = searchQuery.trim().length > 0;
+  const selectedDateStr = format(selectedDate, "yyyy-MM-dd");
+
+  // Server-side filters: when NOT searching, restrict date to selectedDateStr on the server (Supabase)
+  const serverFilters = useMemo(() => {
+    return {
+      ...(filterAccount !== "all" && { account_id: filterAccount }),
+      ...(filterCategory !== "all" && { category_id: filterCategory }),
+      ...(filterType === "inflow" || filterType === "outflow"
+        ? { type: filterType }
+        : {}),
+      ...(!isSearching && {
+        start_date: selectedDateStr,
+        end_date: selectedDateStr,
+      }),
+    };
+  }, [filterAccount, filterCategory, filterType, isSearching, selectedDateStr]);
+
+  // Fetch transactions with server-side filtering
+  const { data: transactions = [], isLoading } = useTransactions(serverFilters);
   const { data: accounts = [] } = useAccounts();
   const { data: categories = [] } = useCategories();
   const createTransaction = useCreateTransaction();
   const updateTransaction = useUpdateTransaction();
   const deleteTransaction = useDeleteTransaction();
-
-  const isSearching = searchQuery.trim().length > 0;
-  const selectedDateStr = format(selectedDate, "yyyy-MM-dd");
 
   const handleSubmit = async (data?: TransactionFormData) => {
     if (!data || !user) return;

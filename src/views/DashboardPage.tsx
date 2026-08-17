@@ -30,15 +30,17 @@ import {
 } from "@/hooks/useTransactions";
 import { TransactionFormDialog } from "@/components/transactions/TransactionFormDialog";
 import type { TransactionFormData } from "@/components/transactions/TransactionFormDialog";
+import { CategoryIcon } from "@/components/shared/CategoryIcon";
 import { useCategories } from "@/hooks/useCategories";
 import { supabase } from "@/lib/supabase";
 import { useQueryClient } from "@tanstack/react-query";
+import type { Transaction, Budget } from "@/types/domain";
 
 export function DashboardPage() {
   const { user } = useAuth();
   const queryClient = useQueryClient();
   const [showForm, setShowForm] = useState(false);
-  const [editingTransaction, setEditingTransaction] = useState<any>(undefined);
+  const [editingTransaction, setEditingTransaction] = useState<Transaction | undefined>(undefined);
 
   const todayStr = format(new Date(), "yyyy-MM-dd");
 
@@ -47,7 +49,7 @@ export function DashboardPage() {
   const { startDate: cycleStart, endDate: cycleEnd } =
     getCurrentFinancialCycle(startDay);
 
-  const { data: stats, isLoading: statsLoading } = useDashboardStats(
+  const { data: stats } = useDashboardStats(
     cycleStart,
     cycleEnd,
   );
@@ -104,7 +106,8 @@ export function DashboardPage() {
           {
             user_id: user.id,
             account_id: data.account_id,
-            category_id: categories.find((c) => c.type === "outflow")?.id ?? "",
+            category_id:
+              categories.find((c) => c.type === "outflow")?.id ?? "",
             amount: data.amount,
             type: "outflow",
             date: data.date,
@@ -121,7 +124,8 @@ export function DashboardPage() {
           {
             user_id: user.id,
             account_id: data.to_account_id!,
-            category_id: categories.find((c) => c.type === "inflow")?.id ?? "",
+            category_id:
+              categories.find((c) => c.type === "inflow")?.id ?? "",
             amount: data.amount,
             type: "inflow",
             date: data.date,
@@ -139,7 +143,9 @@ export function DashboardPage() {
           .eq("id", tx1.id);
       queryClient.invalidateQueries({ queryKey: ["transactions", user.id] });
       queryClient.invalidateQueries({ queryKey: ["accounts", user.id] });
-      queryClient.invalidateQueries({ queryKey: ["dashboard_stats", user.id] });
+      queryClient.invalidateQueries({
+        queryKey: ["dashboard_stats", user.id],
+      });
     } else {
       await createTransaction.mutateAsync({
         account_id: data.account_id,
@@ -160,11 +166,11 @@ export function DashboardPage() {
   };
 
   const totalSpent = budgets.reduce(
-    (sum: number, b: any) => sum + (b.spent ?? 0),
+    (sum: number, b: Budget) => sum + (b.spent ?? 0),
     0,
   );
   const totalBudget = budgets.reduce(
-    (sum: number, b: any) => sum + (b.amount ?? 0),
+    (sum: number, b: Budget) => sum + (b.amount ?? 0),
     0,
   );
   const budgetProgress =
@@ -179,35 +185,24 @@ export function DashboardPage() {
         <StatCard
           title="Net Worth"
           value={formatRupiah(stats?.net_worth ?? 0)}
-          sub="Total saldo semua Account"
           icon={<Wallet className="h-5 w-5 text-ink" strokeWidth={2.5} />}
-          color="bg-hot-pink"
+          color="bg-canary"
         />
         <StatCard
-          title="Pengeluaran Hari Ini"
-          value={formatRupiah(stats?.expense_today ?? 0)}
-          sub="Total outflow hari ini"
-          icon={<ArrowDown className="h-5 w-5 text-ink" strokeWidth={2.5} />}
-          color="bg-coral"
-        />
-        <StatCard
-          title="Income Cycle Ini"
+          title="Income (Cycle)"
           value={formatRupiah(stats?.income_this_cycle ?? 0)}
-          sub="Total inflow periode ini"
           icon={<TrendingUp className="h-5 w-5 text-ink" strokeWidth={2.5} />}
           color="bg-mint"
         />
         <StatCard
-          title="Pengeluaran Cycle Ini"
+          title="Expense (Cycle)"
           value={formatRupiah(stats?.expense_this_cycle ?? 0)}
-          sub="Total outflow periode ini"
           icon={<TrendingDown className="h-5 w-5 text-ink" strokeWidth={2.5} />}
-          color="bg-canary"
+          color="bg-coral"
         />
         <StatCard
           title="Cash Flow"
-          value={(cashFlow >= 0 ? "+" : "") + formatRupiah(cashFlow)}
-          sub="Income - Pengeluaran"
+          value={`${cashFlow >= 0 ? "+" : ""}${formatRupiah(cashFlow)}`}
           icon={
             cashFlow >= 0 ? (
               <TrendingUp className="h-5 w-5 text-ink" strokeWidth={2.5} />
@@ -215,27 +210,34 @@ export function DashboardPage() {
               <TrendingDown className="h-5 w-5 text-ink" strokeWidth={2.5} />
             )
           }
+          color={cashFlow >= 0 ? "bg-mint" : "bg-coral"}
+        />
+        <StatCard
+          title="Pengeluaran Hari Ini"
+          value={formatRupiah(stats?.expense_today ?? 0)}
+          sub="Total outflow hari ini"
+          icon={<ArrowDown className="h-5 w-5 text-ink" strokeWidth={2.5} />}
           color="bg-lilac"
         />
       </div>
 
-      {/* 2. MAIN 2-COLUMN: Account Summary & Budget vs Actual */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        {/* Account Summary */}
-        <div className="card-neubrutalism bg-white p-6 flex flex-col justify-between">
-          <div>
-            <div className="flex justify-between items-center mb-6">
-              <h3 className="font-archivo-black text-xl text-ink">
-                Account Summary
-              </h3>
-              <Link
-                href="/dashboard/accounts"
-                className="btn-neubrutalism bg-white px-3.5 py-1.5 text-xs font-space-grotesk text-ink inline-block"
-              >
-                Kelola
-              </Link>
-            </div>
+      {/* 2. MIDDLE TWO-COLUMN GRID */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+        {/* Accounts Summary */}
+        <div className="card-neubrutalism bg-white p-6 flex flex-col">
+          <div className="flex justify-between items-center mb-6">
+            <h3 className="font-archivo-black text-xl text-ink">
+              Accounts Summary
+            </h3>
+            <Link
+              href="/dashboard/accounts"
+              className="btn-neubrutalism bg-white px-3.5 py-1.5 text-xs font-space-grotesk text-ink inline-block"
+            >
+              Lihat Semua
+            </Link>
+          </div>
 
+          <div className="flex-1 flex flex-col justify-center">
             {accountsLoading && (
               <div className="space-y-3">
                 {[1, 2, 3].map((i) => (
@@ -377,12 +379,6 @@ export function DashboardPage() {
                     style={{ width: `${budgetProgress}%` }}
                   />
                 </div>
-                <div className="flex justify-between text-[11px] font-space-mono text-ink/70">
-                  <span>Budget: {formatRupiah(totalBudget)}</span>
-                  <span>
-                    Sisa: {formatRupiah(Math.max(0, totalBudget - totalSpent))}
-                  </span>
-                </div>
               </div>
 
               {/* Category Breakdown */}
@@ -391,7 +387,7 @@ export function DashboardPage() {
                   Kategori Utama
                 </h4>
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                  {budgets.slice(0, 4).map((b: any, idx: number) => {
+                  {budgets.slice(0, 4).map((b: Budget, idx: number) => {
                     const colors = [
                       "bg-hot-pink",
                       "bg-canary",
@@ -434,10 +430,6 @@ export function DashboardPage() {
                             )}
                             style={{ width: `${bPct}%` }}
                           />
-                        </div>
-                        <div className="flex justify-between mt-1 text-[10px] font-space-mono text-ink/60">
-                          <span>{formatRupiah(bSpent)}</span>
-                          <span>/ {formatRupiah(b.amount)}</span>
                         </div>
                       </div>
                     );
@@ -512,8 +504,8 @@ export function DashboardPage() {
             {todayTransactions.map((tx) => {
               const isTransfer = !!tx.transfer_pair_id;
               const isIncome = tx.type === "inflow";
-              const acc = (tx as any).account;
-              const cat = (tx as any).category;
+              const acc = tx.account;
+              const cat = tx.category;
 
               return (
                 <div
@@ -533,6 +525,8 @@ export function DashboardPage() {
                     >
                       {isTransfer ? (
                         <span className="font-bold text-xs text-ink">⇄</span>
+                      ) : cat?.icon ? (
+                        <CategoryIcon icon={cat.icon} className="h-4 w-4 text-ink" />
                       ) : isIncome ? (
                         <TrendingUp
                           className="h-4 w-4 text-ink"
@@ -557,22 +551,6 @@ export function DashboardPage() {
                   </div>
 
                   <div className="flex items-center gap-3 shrink-0">
-                    <span
-                      className={cn(
-                        "hidden sm:inline-flex items-center justify-center px-2.5 py-0.5 rounded-full border border-ink font-space-grotesk font-bold text-[10px] text-ink uppercase tracking-wide",
-                        isTransfer
-                          ? "bg-canary"
-                          : isIncome
-                            ? "bg-mint"
-                            : "bg-coral",
-                      )}
-                    >
-                      {isTransfer
-                        ? "Transfer"
-                        : isIncome
-                          ? "Income"
-                          : "Expense"}
-                    </span>
                     <p
                       className={cn(
                         "font-space-mono font-bold text-sm tabular-nums",
