@@ -89,7 +89,7 @@ export function useUpsertBudget() {
       const { data, error } = await supabase
         .from("budgets")
         .upsert(
-          { ...budget, user_id: user.id, profile_id: activeProfile.id },
+          { ...budget, user_id: user.id, profile_id: activeProfile!.id },
           {
             onConflict: "profile_id,category_id,cycle_year,cycle_month",
           },

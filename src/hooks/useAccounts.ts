@@ -62,7 +62,7 @@ export function useCreateAccount() {
       if (!user || !activeProfile) throw new Error("Not authenticated or no active profile");
       const { data, error } = await supabase
         .from("accounts")
-        .insert([{ ...newAccount, user_id: user.id }])
+        .insert([{ ...newAccount, user_id: user.id, profile_id: activeProfile!.id }])
         .select()
         .single();
       if (error) throw error;

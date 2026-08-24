@@ -77,7 +77,7 @@ export function useCreateRecurringRule() {
       if (!user || !activeProfile) throw new Error("Not authenticated or no active profile");
       const { data, error } = await supabase
         .from("recurring_rules")
-        .insert([{ ...newRule, user_id: user.id }])
+        .insert([{ ...newRule, user_id: user.id, profile_id: activeProfile!.id }])
         .select()
         .single();
       if (error) throw error;
@@ -241,7 +241,7 @@ export function useApproveRecurringRule() {
       // 1. Create transaction
       const { error: txError } = await supabase.from("transactions").insert([
         {
-          user_id: user.id,
+          user_id: user.id, profile_id: activeProfile!.id,
           account_id: rule.account_id,
           category_id: rule.category_id,
           amount: rule.amount,

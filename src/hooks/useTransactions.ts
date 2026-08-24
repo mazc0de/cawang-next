@@ -80,7 +80,7 @@ export function useCreateTransaction() {
       if (!user || !activeProfile) throw new Error("Not authenticated or no active profile");
       const { data, error } = await supabase
         .from("transactions")
-        .insert([{ ...newTransaction, user_id: user.id }])
+        .insert([{ ...newTransaction, user_id: user.id, profile_id: activeProfile!.id }])
         .select()
         .single();
       if (error) throw error;

@@ -39,7 +39,7 @@ export function useUpdateFinancialCycleConfig() {
       if (!user || !activeProfile) throw new Error("Not authenticated or no active profile");
       const { data, error } = await supabase
         .from("financial_cycle_config")
-        .upsert({ user_id: user.id, profile_id: activeProfile.id, start_day }, { onConflict: "profile_id" })
+        .upsert({ user_id: user.id, profile_id: activeProfile!.id, start_day }, { onConflict: "profile_id" })
         .select()
         .single();
       if (error) throw error;

@@ -47,7 +47,7 @@ export function useCreateCategory() {
       if (!user || !activeProfile) throw new Error("Not authenticated or no active profile");
       const { data, error } = await supabase
         .from("categories")
-        .insert([{ ...newCategory, user_id: user.id }])
+        .insert([{ ...newCategory, user_id: user.id, profile_id: activeProfile!.id }])
         .select()
         .single();
       if (error) throw error;

@@ -40,7 +40,7 @@ export function useCreateTag() {
       if (!user || !activeProfile) throw new Error("Not authenticated or no active profile");
       const { data, error } = await supabase
         .from("tags")
-        .insert([{ ...newTag, user_id: user.id }])
+        .insert([{ ...newTag, user_id: user.id, profile_id: activeProfile!.id }])
         .select()
         .single();
       if (error) throw error;
