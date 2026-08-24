@@ -1,4 +1,5 @@
 "use client";
+import { toast } from "sonner";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/lib/supabase";
 import { useAuth } from "@/contexts/AuthContext";
@@ -85,7 +86,14 @@ export function useCreateTransaction() {
       if (error) throw error;
       return data;
     },
+    onError: (err: any) => {
+
+      toast.error(err.message || "Terjadi kesalahan!");
+
+    },
+
     onSuccess: () => {
+      toast.success("Transaksi berhasil dicatat!");
       queryClient.invalidateQueries({ queryKey: ["transactions", user?.id, activeProfile?.id] });
       queryClient.invalidateQueries({ queryKey: ["accounts", user?.id, activeProfile?.id] });
       queryClient.invalidateQueries({
@@ -117,7 +125,14 @@ export function useUpdateTransaction() {
       if (error) throw error;
       return data;
     },
+    onError: (err: any) => {
+
+      toast.error(err.message || "Terjadi kesalahan!");
+
+    },
+
     onSuccess: () => {
+      toast.success("Transaksi berhasil diperbarui!");
       queryClient.invalidateQueries({ queryKey: ["transactions", user?.id, activeProfile?.id] });
       queryClient.invalidateQueries({ queryKey: ["accounts", user?.id, activeProfile?.id] });
       queryClient.invalidateQueries({
@@ -167,7 +182,14 @@ export function useDeleteTransaction() {
         if (error) throw error;
       }
     },
+    onError: (err: any) => {
+
+      toast.error(err.message || "Terjadi kesalahan!");
+
+    },
+
     onSuccess: () => {
+      toast.success("Transaksi berhasil dihapus!");
       queryClient.invalidateQueries({ queryKey: ["transactions", user?.id, activeProfile?.id] });
       queryClient.invalidateQueries({ queryKey: ["accounts", user?.id, activeProfile?.id] });
       queryClient.invalidateQueries({

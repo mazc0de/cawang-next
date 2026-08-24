@@ -1,4 +1,5 @@
 "use client";
+import { toast } from "sonner";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/lib/supabase";
 import { useAuth } from "@/contexts/AuthContext";
@@ -45,7 +46,14 @@ export function useCreateTag() {
       if (error) throw error;
       return data;
     },
+    onError: (err: any) => {
+
+      toast.error(err.message || "Terjadi kesalahan!");
+
+    },
+
     onSuccess: () => {
+      toast.success("Tag berhasil dibuat!");
       queryClient.invalidateQueries({ queryKey: ["tags", user?.id, activeProfile?.id] });
     },
   });

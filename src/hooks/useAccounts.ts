@@ -1,4 +1,5 @@
 "use client";
+import { toast } from "sonner";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/lib/supabase";
 import { useAuth } from "@/contexts/AuthContext";
@@ -67,7 +68,14 @@ export function useCreateAccount() {
       if (error) throw error;
       return data;
     },
+    onError: (err: any) => {
+
+      toast.error(err.message || "Terjadi kesalahan!");
+
+    },
+
     onSuccess: () => {
+      toast.success("Akun berhasil dibuat!");
       queryClient.invalidateQueries({ queryKey: ["accounts", user?.id, activeProfile?.id] });
     },
   });
@@ -95,7 +103,14 @@ export function useUpdateAccount() {
       if (error) throw error;
       return data;
     },
+    onError: (err: any) => {
+
+      toast.error(err.message || "Terjadi kesalahan!");
+
+    },
+
     onSuccess: () => {
+      toast.success("Akun berhasil diperbarui!");
       queryClient.invalidateQueries({ queryKey: ["accounts", user?.id, activeProfile?.id] });
     },
   });
@@ -117,7 +132,14 @@ export function useDeleteAccount() {
         .eq("profile_id", activeProfile!.id);
       if (error) throw error;
     },
+    onError: (err: any) => {
+
+      toast.error(err.message || "Terjadi kesalahan!");
+
+    },
+
     onSuccess: () => {
+      toast.success("Akun berhasil dihapus!");
       queryClient.invalidateQueries({ queryKey: ["accounts", user?.id, activeProfile?.id] });
     },
   });

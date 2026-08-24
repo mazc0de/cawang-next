@@ -1,4 +1,5 @@
 "use client";
+import { toast } from "sonner";
 import { createContext, useContext, useEffect, useState, type ReactNode } from "react";
 import { useAuth } from "./AuthContext";
 import { supabase } from "@/lib/supabase";
@@ -121,6 +122,7 @@ export function ProfileProvider({ children }: { children: ReactNode }) {
     if (typeof window !== 'undefined') {
       window.location.reload();
     }
+    toast.success("Profil berhasil dibuat!");
     return data;
   };
 
@@ -146,6 +148,7 @@ export function ProfileProvider({ children }: { children: ReactNode }) {
           window.location.reload();
         }
       }
+      toast.success("Profil berhasil dihapus!");
       return newProfiles;
     });
   };

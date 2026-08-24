@@ -1,4 +1,5 @@
 "use client";
+import { toast } from "sonner";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/lib/supabase";
 import { useAuth } from "@/contexts/AuthContext";
@@ -82,7 +83,14 @@ export function useCreateRecurringRule() {
       if (error) throw error;
       return data;
     },
+    onError: (err: any) => {
+
+      toast.error(err.message || "Terjadi kesalahan!");
+
+    },
+
     onSuccess: () => {
+      toast.success("Rule berhasil dibuat!");
       queryClient.invalidateQueries({
         queryKey: ["recurring_rules", user?.id, activeProfile?.id],
       });
@@ -118,7 +126,14 @@ export function useUpdateRecurringRule() {
       if (error) throw error;
       return data;
     },
+    onError: (err: any) => {
+
+      toast.error(err.message || "Terjadi kesalahan!");
+
+    },
+
     onSuccess: () => {
+      toast.success("Rule berhasil diperbarui!");
       queryClient.invalidateQueries({
         queryKey: ["recurring_rules", user?.id, activeProfile?.id],
       });
@@ -157,6 +172,12 @@ export function useToggleRecurringRule() {
       if (error) throw error;
       return data;
     },
+    onError: (err: any) => {
+
+      toast.error(err.message || "Terjadi kesalahan!");
+
+    },
+
     onSuccess: () => {
       queryClient.invalidateQueries({
         queryKey: ["recurring_rules", user?.id, activeProfile?.id],
@@ -187,7 +208,14 @@ export function useDeleteRecurringRule() {
         .eq("profile_id", activeProfile!.id);
       if (error) throw error;
     },
+    onError: (err: any) => {
+
+      toast.error(err.message || "Terjadi kesalahan!");
+
+    },
+
     onSuccess: () => {
+      toast.success("Rule berhasil dihapus!");
       queryClient.invalidateQueries({
         queryKey: ["recurring_rules", user?.id, activeProfile?.id],
       });
@@ -260,6 +288,12 @@ export function useApproveRecurringRule() {
       if (updateError) throw updateError;
       return data;
     },
+    onError: (err: any) => {
+
+      toast.error(err.message || "Terjadi kesalahan!");
+
+    },
+
     onSuccess: () => {
       queryClient.invalidateQueries({
         queryKey: ["recurring_rules", user?.id, activeProfile?.id],

@@ -1,4 +1,5 @@
 "use client";
+import { toast } from "sonner";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/lib/supabase";
 import { useAuth } from "@/contexts/AuthContext";
@@ -44,7 +45,14 @@ export function useUpdateFinancialCycleConfig() {
       if (error) throw error;
       return data;
     },
+    onError: (err: any) => {
+
+      toast.error(err.message || "Terjadi kesalahan!");
+
+    },
+
     onSuccess: () => {
+      toast.success("Siklus berhasil diperbarui!");
       queryClient.invalidateQueries({
         queryKey: ["financial_cycle_config", user?.id, activeProfile?.id],
       });

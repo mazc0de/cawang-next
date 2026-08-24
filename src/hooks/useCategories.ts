@@ -1,4 +1,5 @@
 "use client";
+import { toast } from "sonner";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/lib/supabase";
 import { useAuth } from "@/contexts/AuthContext";
@@ -52,7 +53,14 @@ export function useCreateCategory() {
       if (error) throw error;
       return data;
     },
+    onError: (err: any) => {
+
+      toast.error(err.message || "Terjadi kesalahan!");
+
+    },
+
     onSuccess: () => {
+      toast.success("Kategori berhasil dibuat!");
       queryClient.invalidateQueries({ queryKey: ["categories", user?.id, activeProfile?.id] });
     },
   });
@@ -74,7 +82,14 @@ export function useDeleteCategory() {
         .eq("profile_id", activeProfile!.id);
       if (error) throw error;
     },
+    onError: (err: any) => {
+
+      toast.error(err.message || "Terjadi kesalahan!");
+
+    },
+
     onSuccess: () => {
+      toast.success("Kategori berhasil dihapus!");
       queryClient.invalidateQueries({ queryKey: ["categories", user?.id, activeProfile?.id] });
     },
   });
@@ -102,7 +117,14 @@ export function useUpdateCategory() {
       if (error) throw error;
       return data;
     },
+    onError: (err: any) => {
+
+      toast.error(err.message || "Terjadi kesalahan!");
+
+    },
+
     onSuccess: () => {
+      toast.success("Kategori berhasil diperbarui!");
       queryClient.invalidateQueries({ queryKey: ["categories", user?.id, activeProfile?.id] });
       queryClient.invalidateQueries({ queryKey: ["transactions", user?.id, activeProfile?.id] });
       queryClient.invalidateQueries({

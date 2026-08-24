@@ -1,4 +1,5 @@
 "use client";
+import { toast } from "sonner";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/lib/supabase";
 import { useAuth } from "@/contexts/AuthContext";
@@ -98,7 +99,14 @@ export function useUpsertBudget() {
       if (error) throw error;
       return data;
     },
+    onError: (err: any) => {
+
+      toast.error(err.message || "Terjadi kesalahan!");
+
+    },
+
     onSuccess: (_, variables) => {
+      toast.success("Budget berhasil disimpan!");
       queryClient.invalidateQueries({
         queryKey: [
           "budgets",
@@ -128,7 +136,14 @@ export function useDeleteBudget() {
         .eq("profile_id", activeProfile!.id);
       if (error) throw error;
     },
+    onError: (err: any) => {
+
+      toast.error(err.message || "Terjadi kesalahan!");
+
+    },
+
     onSuccess: () => {
+      toast.success("Budget berhasil dihapus!");
       queryClient.invalidateQueries({ queryKey: ["budgets", user?.id, activeProfile?.id] });
     },
   });
