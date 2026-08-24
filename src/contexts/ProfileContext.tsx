@@ -10,6 +10,7 @@ interface ProfileContextType {
   setActiveProfileId: (id: string) => void;
   loading: boolean;
   createProfile: (name: string, isDefault?: boolean) => Promise<Profile>;
+  deleteProfile: (id: string) => Promise<void>;
 }
 
 const ProfileContext = createContext<ProfileContextType | undefined>(undefined);
@@ -115,10 +116,33 @@ export function ProfileProvider({ children }: { children: ReactNode }) {
     return data;
   };
 
+  const deleteProfile = async (id: string) => {
+    if (!user) throw new Error("Not authenticated");
+    if (profiles.length <= 1) throw new Error("Cannot delete the last profile");
+
+    const { error } = await supabase
+      .from("profiles")
+      .delete()
+      .eq("id", id)
+      .eq("user_id", user.id);
+      
+    if (error) throw error;
+    
+    setProfiles((prev) => {
+      const newProfiles = prev.filter((p) => p.id !== id);
+      // If we deleted the active profile, switch to another one
+      if (activeProfileId === id && newProfiles.length > 0) {
+        setActiveProfileIdState(newProfiles[0].id);
+        localStorage.setItem(`activeProfileId_${user.id}`, newProfiles[0].id);
+      }
+      return newProfiles;
+    });
+  };
+
   const activeProfile = profiles.find((p) => p.id === activeProfileId) || null;
 
   return (
-    <ProfileContext.Provider value={{ profiles, activeProfile, setActiveProfileId, loading, createProfile }}>
+    <ProfileContext.Provider value={{ profiles, activeProfile, setActiveProfileId, loading, createProfile, deleteProfile }}>
       {children}
     </ProfileContext.Provider>
   );
