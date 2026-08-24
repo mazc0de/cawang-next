@@ -70,9 +70,14 @@ export function ProfileProvider({ children }: { children: ReactNode }) {
   }, [user]);
 
   const setActiveProfileId = (id: string) => {
-    setActiveProfileIdState(id);
-    if (user) {
-      localStorage.setItem(`activeProfileId_${user.id}`, id);
+    if (id !== activeProfileId) {
+      setActiveProfileIdState(id);
+      if (user) {
+        localStorage.setItem(`activeProfileId_${user.id}`, id);
+      }
+      if (typeof window !== 'undefined') {
+        window.location.reload();
+      }
     }
   };
 
@@ -113,6 +118,9 @@ export function ProfileProvider({ children }: { children: ReactNode }) {
     setProfiles((prev) => [...prev, data]);
     setActiveProfileIdState(data.id);
     if (user) localStorage.setItem(`activeProfileId_${user.id}`, data.id);
+    if (typeof window !== 'undefined') {
+      window.location.reload();
+    }
     return data;
   };
 
@@ -134,6 +142,9 @@ export function ProfileProvider({ children }: { children: ReactNode }) {
       if (activeProfileId === id && newProfiles.length > 0) {
         setActiveProfileIdState(newProfiles[0].id);
         localStorage.setItem(`activeProfileId_${user.id}`, newProfiles[0].id);
+        if (typeof window !== 'undefined') {
+          window.location.reload();
+        }
       }
       return newProfiles;
     });
