@@ -30,6 +30,7 @@ import {
 } from "@/hooks/useTransactions";
 import { TransactionFormDialog } from "@/components/transactions/TransactionFormDialog";
 import type { TransactionFormData } from "@/components/transactions/TransactionFormDialog";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { CategoryIcon } from "@/components/shared/CategoryIcon";
 import { useCategories } from "@/hooks/useCategories";
 import { supabase } from "@/lib/supabase";
@@ -66,7 +67,9 @@ export function DashboardPage() {
 
   const cycleYear = cycleStart.getFullYear();
   const cycleMonth = cycleStart.getMonth() + 1;
-  const { data: budgets = [] } = useBudgets(cycleYear, cycleMonth);
+  const { data: rawBudgets = [] } = useBudgets(cycleYear, cycleMonth);
+  const [dashboardBudgetAccountId, setDashboardBudgetAccountId] = useState("all");
+  const budgets = rawBudgets.filter((b: any) => dashboardBudgetAccountId === "all" ? true : b.account_id === dashboardBudgetAccountId);
 
   const cashFlow =
     (stats?.income_this_cycle ?? 0) - (stats?.expense_this_cycle ?? 0);
@@ -245,16 +248,31 @@ export function DashboardPage() {
 
         {/* Budget vs Actual */}
         <div className="card-neubrutalism bg-white p-6 flex flex-col">
-          <div className="flex justify-between items-center mb-6">
+          <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-3 mb-6">
             <h3 className="font-archivo-black text-xl text-ink">
               Budget vs Actual
             </h3>
-            <Link
-              href="/dashboard/budget"
-              className="btn-neubrutalism bg-white px-3.5 py-1.5 text-xs font-space-grotesk text-ink inline-block"
-            >
-              Atur Budget
-            </Link>
+            <div className="flex items-center gap-2">
+              <Select value={dashboardBudgetAccountId} onValueChange={setDashboardBudgetAccountId}>
+                <SelectTrigger className="h-8 text-xs font-space-grotesk font-bold bg-white w-[140px]">
+                  <SelectValue placeholder="Pilih Akun" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">Semua Akun</SelectItem>
+                  {accounts.map((acc: any) => (
+                    <SelectItem key={acc.id} value={acc.id}>
+                      {acc.name}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+              <Link
+                href="/dashboard/budget"
+                className="btn-neubrutalism bg-white px-3.5 py-1.5 text-xs font-space-grotesk text-ink inline-block whitespace-nowrap"
+              >
+                Atur Budget
+              </Link>
+            </div>
           </div>
 
           {budgets.length === 0 ? (

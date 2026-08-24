@@ -71,6 +71,7 @@ export function BudgetPage() {
 
   const { data: budgets = [], isLoading } = useBudgets(cycleYear, cycleMonth);
   const { data: categories = [] } = useCategories("outflow");
+  const { data: accounts = [] } = useAccounts();
   const upsertBudget = useUpsertBudget();
   const deleteBudget = useDeleteBudget();
 
@@ -91,6 +92,11 @@ export function BudgetPage() {
   const [addCategoryId, setAddCategoryId] = useState("");
   const [addAccountId, setAddAccountId] = useState("all");
   const [addAmount, setAddAmount] = useState("");
+  const [selectedTabAccountId, setSelectedTabAccountId] = useState("all");
+
+  const selectedAccount = accounts.find((a: any) => a.id === addAccountId);
+  const maxAmount = selectedAccount ? selectedAccount.actual_balance : null;
+  const isOverBudget = maxAmount !== null && Number(addAmount) > maxAmount;
 
   // Wizard state
   const [wizardStep, setWizardStep] = useState<
@@ -101,8 +107,9 @@ export function BudgetPage() {
   );
   const [wizardIncome, setWizardIncome] = useState("");
 
-  const totalBudget = budgets.reduce((s: number, b: any) => s + b.amount, 0);
-  const totalSpent = budgets.reduce(
+  const filteredBudgets = budgets.filter((b: any) => selectedTabAccountId === "all" ? true : b.account_id === selectedTabAccountId);
+  const totalBudget = filteredBudgets.reduce((s: number, b: any) => s + b.amount, 0);
+  const totalSpent = filteredBudgets.reduce(
     (s: number, b: any) => s + (b.spent ?? 0),
     0,
   );
@@ -110,7 +117,7 @@ export function BudgetPage() {
     totalBudget > 0 ? Math.round((totalSpent / totalBudget) * 100) : 0;
 
   // Categories not yet budgeted
-  const budgetedCategoryIds = new Set(budgets.map((b: any) => b.category_id));
+  const budgetedCategoryIds = new Set(filteredBudgets.map((b: any) => b.category_id));
   const unbucketedCategories = categories.filter(
     (c) => !budgetedCategoryIds.has(c.id),
   );
@@ -118,7 +125,7 @@ export function BudgetPage() {
   const handleOpenAdd = () => {
     setAddCategoryId("");
     setAddAmount("");
-    setAddAccountId("all");
+    setAddAccountId(selectedTabAccountId);
     setEditBudget(null);
     setShowAddDialog(true);
   };
@@ -173,8 +180,35 @@ export function BudgetPage() {
         </div>
       )}
 
+            {/* Account Tabs */}
+      {!isLoading && (
+        <div className="flex items-center gap-2 overflow-x-auto pb-2 scrollbar-hide">
+          <button
+            onClick={() => setSelectedTabAccountId("all")}
+            className={cn(
+              "px-4 py-2 rounded-full border-2 border-ink text-sm font-space-grotesk font-bold whitespace-nowrap transition-colors",
+              selectedTabAccountId === "all" ? "bg-ink text-white" : "bg-white text-ink hover:bg-canvas"
+            )}
+          >
+            Semua Akun
+          </button>
+          {accounts.map((acc: any) => (
+            <button
+              key={acc.id}
+              onClick={() => setSelectedTabAccountId(acc.id)}
+              className={cn(
+                "px-4 py-2 rounded-full border-2 border-ink text-sm font-space-grotesk font-bold whitespace-nowrap transition-colors",
+                selectedTabAccountId === acc.id ? "bg-ink text-white" : "bg-white text-ink hover:bg-canvas"
+              )}
+            >
+              {acc.name}
+            </button>
+          ))}
+        </div>
+      )}
+
       {/* Empty State */}
-      {!isLoading && budgets.length === 0 && (
+      {!isLoading && filteredBudgets.length === 0 && (
         <div className="flex flex-col items-center justify-center py-16 px-4 text-center rounded-[18px] bg-canvas border-2 border-dashed border-ink/20">
           <div className="w-16 h-16 rounded-[16px] bg-canary border-2 border-ink shadow-hard-sm flex items-center justify-center mb-4">
             <PieChart className="h-8 w-8 text-ink" strokeWidth={2.5} />
@@ -208,7 +242,7 @@ export function BudgetPage() {
       )}
 
       {/* Main Content with Budgets */}
-      {!isLoading && budgets.length > 0 && (
+      {!isLoading && filteredBudgets.length > 0 && (
         <>
           {/* 2. OVERVIEW CARD */}
           <div
@@ -285,11 +319,39 @@ export function BudgetPage() {
                 </p>
               </div>
             </div>
+            
+            {selectedTabAccountId !== "all" && (() => {
+              const selectedAcc = accounts.find((a: any) => a.id === selectedTabAccountId);
+              if (!selectedAcc) return null;
+              const accountBalance = selectedAcc.actual_balance || 0;
+              const remainingBalance = accountBalance - totalBudget;
+              
+              return (
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-4 border-t-2 border-dashed border-ink/20">
+                  <div className="p-3.5 rounded-[14px] bg-white border-2 border-ink shadow-[2px_2px_0px_0px_#111] flex items-center justify-between">
+                    <p className="font-space-grotesk font-bold text-[11px] uppercase tracking-wider text-ink/60">
+                      Total Saldo Akun
+                    </p>
+                    <p className="font-space-mono font-bold text-sm sm:text-base text-ink">
+                      {formatRupiah(accountBalance, true)}
+                    </p>
+                  </div>
+                  <div className="p-3.5 rounded-[14px] bg-white border-2 border-ink shadow-[2px_2px_0px_0px_#111] flex items-center justify-between">
+                    <p className="font-space-grotesk font-bold text-[11px] uppercase tracking-wider text-ink/60">
+                      Sisa (Saldo - Budget)
+                    </p>
+                    <p className={cn("font-space-mono font-bold text-sm sm:text-base", remainingBalance < 0 ? "text-coral" : "text-mint")}>
+                      {formatRupiah(remainingBalance, true)}
+                    </p>
+                  </div>
+                </div>
+              );
+            })()}
           </div>
 
           {/* 3. BUDGET CATEGORIES GRID */}
           <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
-            {budgets.map((b: any) => {
+            {filteredBudgets.map((b: any) => {
               const spent = b.spent ?? 0;
               const pct =
                 b.amount > 0
@@ -409,7 +471,8 @@ export function BudgetPage() {
           </DialogHeader>
           <div className="space-y-4 py-2">
             {!editBudget && (
-              <div className="space-y-1.5">
+              <>
+                <div className="space-y-1.5">
                 <Label
                   htmlFor="budget-category"
                   className="text-xs font-space-grotesk font-bold uppercase tracking-wider text-ink"
@@ -438,15 +501,47 @@ export function BudgetPage() {
                   </SelectContent>
                 </Select>
               </div>
+              <div className="space-y-2">
+                <Label
+                  htmlFor="budget-account"
+                  className="text-xs font-space-grotesk font-bold uppercase tracking-wider text-ink"
+                >
+                  Akun (Opsional)
+                </Label>
+                <Select value={addAccountId} onValueChange={setAddAccountId}>
+                  <SelectTrigger
+                    id="budget-account"
+                    className="h-10 text-xs font-space-grotesk font-bold"
+                  >
+                    <SelectValue placeholder="Pilih akun" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="all">Semua Akun</SelectItem>
+                    {accounts.map((acc: any) => (
+                      <SelectItem key={acc.id} value={acc.id}>
+                        {acc.name}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+              </>
             )}
 
             <div className="space-y-1.5">
-              <Label
-                htmlFor="budget-amount"
-                className="text-xs font-space-grotesk font-bold uppercase tracking-wider text-ink"
-              >
-                Jumlah Budget
-              </Label>
+                            <div className="flex justify-between items-center">
+                <Label
+                  htmlFor="budget-amount"
+                  className="text-xs font-space-grotesk font-bold uppercase tracking-wider text-ink"
+                >
+                  Jumlah Budget
+                </Label>
+                {maxAmount !== null && (
+                  <span className={cn("text-[10px] font-space-mono font-bold", isOverBudget ? "text-coral" : "text-ink/60")}>
+                    Maks: {formatRupiah(maxAmount)}
+                  </span>
+                )}
+              </div>
               <div className="relative">
                 <span className="absolute left-3.5 top-1/2 -translate-y-1/2 text-xs font-space-mono font-bold text-ink/60">
                   Rp
@@ -482,6 +577,7 @@ export function BudgetPage() {
                   !addCategoryId ||
                   !addAmount ||
                   Number(addAmount) <= 0 ||
+                  isOverBudget ||
                   upsertBudget.isPending
                 }
                 onClick={handleSaveBudget}
