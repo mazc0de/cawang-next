@@ -8,26 +8,45 @@
 create extension if not exists "uuid-ossp";
 
 -- ============================================================
+-- PROFILES (Workspaces)
+-- ============================================================
+create table if not exists profiles (
+  id uuid primary key default uuid_generate_v4(),
+  user_id uuid not null references auth.users(id) on delete cascade,
+  name text not null,
+  is_default boolean not null default false,
+  created_at timestamptz not null default now(),
+  updated_at timestamptz not null default now()
+);
+
+
+
+-- ============================================================
 -- FINANCIAL CYCLE CONFIG
 -- ============================================================
 create table if not exists financial_cycle_config (
   id uuid primary key default uuid_generate_v4(),
   user_id uuid not null references auth.users(id) on delete cascade,
+  profile_id uuid not null references profiles(id) on delete cascade,
   start_day smallint not null default 1 check (start_day between 1 and 28),
   created_at timestamptz not null default now(),
   updated_at timestamptz not null default now(),
-  unique(user_id)
+  unique(profile_id)
 );
 
 -- ============================================================
 -- ACCOUNTS
 -- Wadah uang nyata milik user (BCA, OVO, Cash, dll)
 -- ============================================================
-create type account_type as enum ('bank', 'e_wallet', 'cash');
+do $$ begin
+  create type account_type as enum ('bank', 'e_wallet', 'cash');
+exception when duplicate_object then null;
+end $$;
 
 create table if not exists accounts (
   id uuid primary key default uuid_generate_v4(),
   user_id uuid not null references auth.users(id) on delete cascade,
+  profile_id uuid not null references profiles(id) on delete cascade,
   name text not null,
   type account_type not null default 'bank',
   opening_balance bigint not null default 0, -- stored in IDR (sen = satuan terkecil)
@@ -39,11 +58,15 @@ create table if not exists accounts (
 -- CATEGORIES
 -- Label wajib per Transaction
 -- ============================================================
-create type transaction_type as enum ('inflow', 'outflow');
+do $$ begin
+  create type transaction_type as enum ('inflow', 'outflow');
+exception when duplicate_object then null;
+end $$;
 
 create table if not exists categories (
   id uuid primary key default uuid_generate_v4(),
   user_id uuid not null references auth.users(id) on delete cascade,
+  profile_id uuid not null references profiles(id) on delete cascade,
   name text not null,
   icon text,
   color text,
@@ -58,9 +81,10 @@ create table if not exists categories (
 create table if not exists tags (
   id uuid primary key default uuid_generate_v4(),
   user_id uuid not null references auth.users(id) on delete cascade,
+  profile_id uuid not null references profiles(id) on delete cascade,
   name text not null,
   created_at timestamptz not null default now(),
-  unique(user_id, name)
+  unique(profile_id, name)
 );
 
 -- ============================================================
@@ -71,6 +95,7 @@ create table if not exists tags (
 create table if not exists transactions (
   id uuid primary key default uuid_generate_v4(),
   user_id uuid not null references auth.users(id) on delete cascade,
+  profile_id uuid not null references profiles(id) on delete cascade,
   account_id uuid not null references accounts(id) on delete cascade,
   category_id uuid not null references categories(id),
   amount bigint not null check (amount > 0), -- selalu positif; type menentukan arah
@@ -97,12 +122,19 @@ create table if not exists transaction_tags (
 -- Template jadwal → menghasilkan Transaction secara berkala
 -- BUKAN Transaction itu sendiri
 -- ============================================================
-create type recurring_frequency as enum ('daily', 'weekly', 'monthly', 'yearly');
-create type recurring_posting_mode as enum ('auto_post', 'requires_confirmation');
+do $$ begin
+  create type recurring_frequency as enum ('daily', 'weekly', 'monthly', 'yearly');
+exception when duplicate_object then null;
+end $$;
+do $$ begin
+  create type recurring_posting_mode as enum ('auto_post', 'requires_confirmation');
+exception when duplicate_object then null;
+end $$;
 
 create table if not exists recurring_rules (
   id uuid primary key default uuid_generate_v4(),
   user_id uuid not null references auth.users(id) on delete cascade,
+  profile_id uuid not null references profiles(id) on delete cascade,
   account_id uuid not null references accounts(id) on delete cascade,
   category_id uuid not null references categories(id),
   amount bigint not null check (amount > 0),
@@ -123,13 +155,14 @@ create table if not exists recurring_rules (
 create table if not exists budgets (
   id uuid primary key default uuid_generate_v4(),
   user_id uuid not null references auth.users(id) on delete cascade,
+  profile_id uuid not null references profiles(id) on delete cascade,
   category_id uuid not null references categories(id) on delete cascade,
   cycle_year smallint not null,
   cycle_month smallint not null check (cycle_month between 1 and 12),
   amount bigint not null check (amount > 0),
   created_at timestamptz not null default now(),
   updated_at timestamptz not null default now(),
-  unique(user_id, category_id, cycle_year, cycle_month)
+  unique(profile_id, category_id, cycle_year, cycle_month)
 );
 
 -- ============================================================
@@ -145,7 +178,12 @@ alter table transaction_tags enable row level security;
 alter table recurring_rules enable row level security;
 alter table budgets enable row level security;
 
--- Policies: user hanya bisa akses data miliknya sendiri
+alter table profiles enable row level security;
+
+-- Policies:
+create policy "user_own_profiles" on profiles
+  for all using (auth.uid() = user_id) with check (auth.uid() = user_id);
+-- user hanya bisa akses data miliknya sendiri
 create policy "user_own_financial_cycle_config" on financial_cycle_config
   for all using (auth.uid() = user_id) with check (auth.uid() = user_id);
 

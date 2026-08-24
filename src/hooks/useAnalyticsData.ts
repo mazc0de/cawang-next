@@ -2,6 +2,7 @@
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/lib/supabase";
 import { useAuth } from "@/contexts/AuthContext";
+import { useProfile } from "@/contexts/ProfileContext";
 
 export interface SpendingByCategory {
   name: string;
@@ -41,6 +42,7 @@ const COLORS = [
 
 export function useAnalyticsData(cycleStart: Date, cycleEnd: Date) {
   const { user } = useAuth();
+  const { activeProfile } = useProfile();
 
   return useQuery({
     queryKey: [
@@ -50,7 +52,7 @@ export function useAnalyticsData(cycleStart: Date, cycleEnd: Date) {
       cycleEnd.toISOString(),
     ],
     queryFn: async () => {
-      if (!user) return null;
+      if (!user || !activeProfile) return null;
 
       // 1. Spending by Category (Current Cycle)
       const startStr = cycleStart.toISOString().split("T")[0];
@@ -60,6 +62,7 @@ export function useAnalyticsData(cycleStart: Date, cycleEnd: Date) {
         .from("transactions")
         .select("amount, category_id, categories(name)")
         .eq("user_id", user.id)
+        .eq("profile_id", activeProfile!.id)
         .eq("type", "outflow")
         .eq("is_adjustment", false)
         .is("transfer_pair_id", null)
@@ -124,6 +127,7 @@ export function useAnalyticsData(cycleStart: Date, cycleEnd: Date) {
         .from("transactions")
         .select("amount, type, date")
         .eq("user_id", user.id)
+        .eq("profile_id", activeProfile!.id)
         .eq("is_adjustment", false)
         .is("transfer_pair_id", null)
         .gte("date", fiveMonthsAgoStart);
@@ -148,7 +152,8 @@ export function useAnalyticsData(cycleStart: Date, cycleEnd: Date) {
       const { data: accountsData, error: accountsError } = await supabase
         .from("accounts")
         .select("opening_balance, transactions(amount, type)")
-        .eq("user_id", user.id);
+        .eq("user_id", user.id)
+        .eq("profile_id", activeProfile!.id);
 
       if (accountsError) throw accountsError;
 
@@ -189,6 +194,6 @@ export function useAnalyticsData(cycleStart: Date, cycleEnd: Date) {
         netWorthOverTime,
       } as AnalyticsData;
     },
-    enabled: !!user,
+    enabled: !!user && !!activeProfile,
   });
 }

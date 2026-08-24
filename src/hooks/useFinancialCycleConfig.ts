@@ -2,36 +2,40 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/lib/supabase";
 import { useAuth } from "@/contexts/AuthContext";
+import { useProfile } from "@/contexts/ProfileContext";
 import type { FinancialCycleConfig } from "@/types/domain";
 
 export function useFinancialCycleConfig() {
   const { user } = useAuth();
+  const { activeProfile } = useProfile();
 
   return useQuery({
-    queryKey: ["financial_cycle_config", user?.id],
+    queryKey: ["financial_cycle_config", user?.id, activeProfile?.id, activeProfile?.id],
     queryFn: async () => {
-      if (!user) return null;
+      if (!user || !activeProfile) return null;
 
       const { data, error } = await supabase
         .from("financial_cycle_config")
         .select("*")
         .eq("user_id", user.id)
+        .eq("profile_id", activeProfile!.id)
         .single();
 
       if (error && error.code !== "PGRST116") throw error; // PGRST116 is no rows returned
       return (data as FinancialCycleConfig) || { start_day: 1 };
     },
-    enabled: !!user,
+    enabled: !!user && !!activeProfile,
   });
 }
 
 export function useUpdateFinancialCycleConfig() {
   const queryClient = useQueryClient();
   const { user } = useAuth();
+  const { activeProfile } = useProfile();
 
   return useMutation({
     mutationFn: async (start_day: number) => {
-      if (!user) throw new Error("Not authenticated");
+      if (!user || !activeProfile) throw new Error("Not authenticated or no active profile");
       const { data, error } = await supabase
         .from("financial_cycle_config")
         .upsert({ user_id: user.id, start_day }, { onConflict: "user_id" })
@@ -42,9 +46,9 @@ export function useUpdateFinancialCycleConfig() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({
-        queryKey: ["financial_cycle_config", user?.id],
+        queryKey: ["financial_cycle_config", user?.id, activeProfile?.id, activeProfile?.id],
       });
-      queryClient.invalidateQueries({ queryKey: ["budgets", user?.id] });
+      queryClient.invalidateQueries({ queryKey: ["budgets", user?.id, activeProfile?.id, activeProfile?.id] });
     },
   });
 }

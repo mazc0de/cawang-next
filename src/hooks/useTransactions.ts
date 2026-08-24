@@ -2,6 +2,7 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/lib/supabase";
 import { useAuth } from "@/contexts/AuthContext";
+import { useProfile } from "@/contexts/ProfileContext";
 import type { Transaction } from "@/types/domain";
 
 export interface TransactionFilters {
@@ -14,11 +15,12 @@ export interface TransactionFilters {
 
 export function useTransactions(filters?: TransactionFilters) {
   const { user } = useAuth();
+  const { activeProfile } = useProfile();
 
   return useQuery({
-    queryKey: ["transactions", user?.id, filters],
+    queryKey: ["transactions", user?.id, activeProfile?.id, filters],
     queryFn: async () => {
-      if (!user) return [];
+      if (!user || !activeProfile) return [];
 
       let query = supabase
         .from("transactions")
@@ -26,6 +28,7 @@ export function useTransactions(filters?: TransactionFilters) {
           "*, account:accounts(id,name,type), category:categories(id,name,icon,color,type), transaction_tags(tag:tags(id,name))",
         )
         .eq("user_id", user.id)
+        .eq("profile_id", activeProfile!.id)
         .order("date", { ascending: false });
 
       if (filters?.account_id)
@@ -50,13 +53,14 @@ export function useTransactions(filters?: TransactionFilters) {
         } as Transaction;
       });
     },
-    enabled: !!user,
+    enabled: !!user && !!activeProfile,
   });
 }
 
 export function useCreateTransaction() {
   const queryClient = useQueryClient();
   const { user } = useAuth();
+  const { activeProfile } = useProfile();
 
   return useMutation({
     mutationFn: async (
@@ -64,6 +68,7 @@ export function useCreateTransaction() {
         Transaction,
         | "id"
         | "user_id"
+        | "profile_id"
         | "created_at"
         | "updated_at"
         | "account"
@@ -71,7 +76,7 @@ export function useCreateTransaction() {
         | "tags"
       >,
     ) => {
-      if (!user) throw new Error("Not authenticated");
+      if (!user || !activeProfile) throw new Error("Not authenticated or no active profile");
       const { data, error } = await supabase
         .from("transactions")
         .insert([{ ...newTransaction, user_id: user.id }])
@@ -81,10 +86,10 @@ export function useCreateTransaction() {
       return data;
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["transactions", user?.id] });
-      queryClient.invalidateQueries({ queryKey: ["accounts", user?.id] });
+      queryClient.invalidateQueries({ queryKey: ["transactions", user?.id, activeProfile?.id, activeProfile?.id] });
+      queryClient.invalidateQueries({ queryKey: ["accounts", user?.id, activeProfile?.id, activeProfile?.id] });
       queryClient.invalidateQueries({
-        queryKey: ["dashboard_stats", user?.id],
+        queryKey: ["dashboard_stats", user?.id, activeProfile?.id, activeProfile?.id],
       });
     },
   });
@@ -93,28 +98,30 @@ export function useCreateTransaction() {
 export function useUpdateTransaction() {
   const queryClient = useQueryClient();
   const { user } = useAuth();
+  const { activeProfile } = useProfile();
 
   return useMutation({
     mutationFn: async ({
       id,
       ...updates
     }: Partial<Transaction> & { id: string }) => {
-      if (!user) throw new Error("Not authenticated");
+      if (!user || !activeProfile) throw new Error("Not authenticated or no active profile");
       const { data, error } = await supabase
         .from("transactions")
         .update(updates)
         .eq("id", id)
         .eq("user_id", user.id)
+        .eq("profile_id", activeProfile!.id)
         .select()
         .single();
       if (error) throw error;
       return data;
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["transactions", user?.id] });
-      queryClient.invalidateQueries({ queryKey: ["accounts", user?.id] });
+      queryClient.invalidateQueries({ queryKey: ["transactions", user?.id, activeProfile?.id, activeProfile?.id] });
+      queryClient.invalidateQueries({ queryKey: ["accounts", user?.id, activeProfile?.id, activeProfile?.id] });
       queryClient.invalidateQueries({
-        queryKey: ["dashboard_stats", user?.id],
+        queryKey: ["dashboard_stats", user?.id, activeProfile?.id, activeProfile?.id],
       });
     },
   });
@@ -123,10 +130,11 @@ export function useUpdateTransaction() {
 export function useDeleteTransaction() {
   const queryClient = useQueryClient();
   const { user } = useAuth();
+  const { activeProfile } = useProfile();
 
   return useMutation({
     mutationFn: async (id: string) => {
-      if (!user) throw new Error("Not authenticated");
+      if (!user || !activeProfile) throw new Error("Not authenticated or no active profile");
 
       // First get the transaction to see if it has a transfer pair
       const { data: tx, error: fetchError } = await supabase
@@ -134,6 +142,7 @@ export function useDeleteTransaction() {
         .select("transfer_pair_id")
         .eq("id", id)
         .eq("user_id", user.id)
+        .eq("profile_id", activeProfile!.id)
         .single();
 
       if (fetchError) throw fetchError;
@@ -144,7 +153,8 @@ export function useDeleteTransaction() {
           .from("transactions")
           .delete()
           .eq("transfer_pair_id", tx.transfer_pair_id)
-          .eq("user_id", user.id);
+          .eq("user_id", user.id)
+        .eq("profile_id", activeProfile!.id);
         if (error) throw error;
       } else {
         // Delete single transaction
@@ -152,15 +162,16 @@ export function useDeleteTransaction() {
           .from("transactions")
           .delete()
           .eq("id", id)
-          .eq("user_id", user.id);
+          .eq("user_id", user.id)
+        .eq("profile_id", activeProfile!.id);
         if (error) throw error;
       }
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["transactions", user?.id] });
-      queryClient.invalidateQueries({ queryKey: ["accounts", user?.id] });
+      queryClient.invalidateQueries({ queryKey: ["transactions", user?.id, activeProfile?.id, activeProfile?.id] });
+      queryClient.invalidateQueries({ queryKey: ["accounts", user?.id, activeProfile?.id, activeProfile?.id] });
       queryClient.invalidateQueries({
-        queryKey: ["dashboard_stats", user?.id],
+        queryKey: ["dashboard_stats", user?.id, activeProfile?.id, activeProfile?.id],
       });
     },
   });

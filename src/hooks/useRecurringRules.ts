@@ -2,36 +2,40 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/lib/supabase";
 import { useAuth } from "@/contexts/AuthContext";
+import { useProfile } from "@/contexts/ProfileContext";
 import type { RecurringRule, PendingConfirmation } from "@/types/domain";
 
 export function useRecurringRules() {
   const { user } = useAuth();
+  const { activeProfile } = useProfile();
 
   return useQuery({
-    queryKey: ["recurring_rules", user?.id],
+    queryKey: ["recurring_rules", user?.id, activeProfile?.id, activeProfile?.id],
     queryFn: async () => {
-      if (!user) return [];
+      if (!user || !activeProfile) return [];
 
       const { data, error } = await supabase
         .from("recurring_rules")
         .select("*, account:accounts(*), category:categories(*)")
         .eq("user_id", user.id)
+        .eq("profile_id", activeProfile!.id)
         .order("next_due_date");
 
       if (error) throw error;
       return data as RecurringRule[];
     },
-    enabled: !!user,
+    enabled: !!user && !!activeProfile,
   });
 }
 
 export function usePendingConfirmations() {
   const { user } = useAuth();
+  const { activeProfile } = useProfile();
 
   return useQuery({
-    queryKey: ["pending_confirmations", user?.id],
+    queryKey: ["pending_confirmations", user?.id, activeProfile?.id, activeProfile?.id],
     queryFn: async () => {
-      if (!user) return [];
+      if (!user || !activeProfile) return [];
 
       const todayStr = new Date().toISOString().split("T")[0];
 
@@ -39,6 +43,7 @@ export function usePendingConfirmations() {
         .from("recurring_rules")
         .select("*, account:accounts(*), category:categories(*)")
         .eq("user_id", user.id)
+        .eq("profile_id", activeProfile!.id)
         .eq("is_active", true)
         .eq("posting_mode", "requires_confirmation")
         .lte("next_due_date", todayStr)
@@ -51,22 +56,24 @@ export function usePendingConfirmations() {
         due_date: rule.next_due_date,
       })) as PendingConfirmation[];
     },
-    enabled: !!user,
+    enabled: !!user && !!activeProfile,
   });
 }
 
 export function useCreateRecurringRule() {
   const queryClient = useQueryClient();
   const { user } = useAuth();
+  const { activeProfile } = useProfile();
 
   return useMutation({
     mutationFn: async (
       newRule: Omit<
         RecurringRule,
-        "id" | "user_id" | "created_at" | "updated_at" | "account" | "category"
+        "id" | "user_id"
+        | "profile_id" | "created_at" | "updated_at" | "account" | "category"
       >,
     ) => {
-      if (!user) throw new Error("Not authenticated");
+      if (!user || !activeProfile) throw new Error("Not authenticated or no active profile");
       const { data, error } = await supabase
         .from("recurring_rules")
         .insert([{ ...newRule, user_id: user.id }])
@@ -77,13 +84,13 @@ export function useCreateRecurringRule() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({
-        queryKey: ["recurring_rules", user?.id],
+        queryKey: ["recurring_rules", user?.id, activeProfile?.id, activeProfile?.id],
       });
       queryClient.invalidateQueries({
-        queryKey: ["pending_confirmations", user?.id],
+        queryKey: ["pending_confirmations", user?.id, activeProfile?.id, activeProfile?.id],
       });
       queryClient.invalidateQueries({
-        queryKey: ["dashboard_stats", user?.id],
+        queryKey: ["dashboard_stats", user?.id, activeProfile?.id, activeProfile?.id],
       });
     },
   });
@@ -92,18 +99,20 @@ export function useCreateRecurringRule() {
 export function useUpdateRecurringRule() {
   const queryClient = useQueryClient();
   const { user } = useAuth();
+  const { activeProfile } = useProfile();
 
   return useMutation({
     mutationFn: async ({
       id,
       ...updates
     }: Partial<RecurringRule> & { id: string }) => {
-      if (!user) throw new Error("Not authenticated");
+      if (!user || !activeProfile) throw new Error("Not authenticated or no active profile");
       const { data, error } = await supabase
         .from("recurring_rules")
         .update(updates)
         .eq("id", id)
         .eq("user_id", user.id)
+        .eq("profile_id", activeProfile!.id)
         .select()
         .single();
       if (error) throw error;
@@ -111,13 +120,13 @@ export function useUpdateRecurringRule() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({
-        queryKey: ["recurring_rules", user?.id],
+        queryKey: ["recurring_rules", user?.id, activeProfile?.id, activeProfile?.id],
       });
       queryClient.invalidateQueries({
-        queryKey: ["pending_confirmations", user?.id],
+        queryKey: ["pending_confirmations", user?.id, activeProfile?.id, activeProfile?.id],
       });
       queryClient.invalidateQueries({
-        queryKey: ["dashboard_stats", user?.id],
+        queryKey: ["dashboard_stats", user?.id, activeProfile?.id, activeProfile?.id],
       });
     },
   });
@@ -126,6 +135,7 @@ export function useUpdateRecurringRule() {
 export function useToggleRecurringRule() {
   const queryClient = useQueryClient();
   const { user } = useAuth();
+  const { activeProfile } = useProfile();
 
   return useMutation({
     mutationFn: async ({
@@ -135,12 +145,13 @@ export function useToggleRecurringRule() {
       id: string;
       is_active: boolean;
     }) => {
-      if (!user) throw new Error("Not authenticated");
+      if (!user || !activeProfile) throw new Error("Not authenticated or no active profile");
       const { data, error } = await supabase
         .from("recurring_rules")
         .update({ is_active })
         .eq("id", id)
         .eq("user_id", user.id)
+        .eq("profile_id", activeProfile!.id)
         .select()
         .single();
       if (error) throw error;
@@ -148,13 +159,13 @@ export function useToggleRecurringRule() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({
-        queryKey: ["recurring_rules", user?.id],
+        queryKey: ["recurring_rules", user?.id, activeProfile?.id, activeProfile?.id],
       });
       queryClient.invalidateQueries({
-        queryKey: ["pending_confirmations", user?.id],
+        queryKey: ["pending_confirmations", user?.id, activeProfile?.id, activeProfile?.id],
       });
       queryClient.invalidateQueries({
-        queryKey: ["dashboard_stats", user?.id],
+        queryKey: ["dashboard_stats", user?.id, activeProfile?.id, activeProfile?.id],
       });
     },
   });
@@ -163,26 +174,28 @@ export function useToggleRecurringRule() {
 export function useDeleteRecurringRule() {
   const queryClient = useQueryClient();
   const { user } = useAuth();
+  const { activeProfile } = useProfile();
 
   return useMutation({
     mutationFn: async (id: string) => {
-      if (!user) throw new Error("Not authenticated");
+      if (!user || !activeProfile) throw new Error("Not authenticated or no active profile");
       const { error } = await supabase
         .from("recurring_rules")
         .delete()
         .eq("id", id)
-        .eq("user_id", user.id);
+        .eq("user_id", user.id)
+        .eq("profile_id", activeProfile!.id);
       if (error) throw error;
     },
     onSuccess: () => {
       queryClient.invalidateQueries({
-        queryKey: ["recurring_rules", user?.id],
+        queryKey: ["recurring_rules", user?.id, activeProfile?.id, activeProfile?.id],
       });
       queryClient.invalidateQueries({
-        queryKey: ["pending_confirmations", user?.id],
+        queryKey: ["pending_confirmations", user?.id, activeProfile?.id, activeProfile?.id],
       });
       queryClient.invalidateQueries({
-        queryKey: ["dashboard_stats", user?.id],
+        queryKey: ["dashboard_stats", user?.id, activeProfile?.id, activeProfile?.id],
       });
     },
   });
@@ -191,10 +204,11 @@ export function useDeleteRecurringRule() {
 export function useApproveRecurringRule() {
   const queryClient = useQueryClient();
   const { user } = useAuth();
+  const { activeProfile } = useProfile();
 
   return useMutation({
     mutationFn: async (rule: RecurringRule) => {
-      if (!user) throw new Error("Not authenticated");
+      if (!user || !activeProfile) throw new Error("Not authenticated or no active profile");
 
       // 1. Create transaction
       const { error: txError } = await supabase.from("transactions").insert([
@@ -239,6 +253,7 @@ export function useApproveRecurringRule() {
         .update({ next_due_date: nextDueStr })
         .eq("id", rule.id)
         .eq("user_id", user.id)
+        .eq("profile_id", activeProfile!.id)
         .select()
         .single();
 
@@ -247,15 +262,15 @@ export function useApproveRecurringRule() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({
-        queryKey: ["recurring_rules", user?.id],
+        queryKey: ["recurring_rules", user?.id, activeProfile?.id, activeProfile?.id],
       });
       queryClient.invalidateQueries({
-        queryKey: ["pending_confirmations", user?.id],
+        queryKey: ["pending_confirmations", user?.id, activeProfile?.id, activeProfile?.id],
       });
-      queryClient.invalidateQueries({ queryKey: ["transactions", user?.id] });
-      queryClient.invalidateQueries({ queryKey: ["accounts", user?.id] });
+      queryClient.invalidateQueries({ queryKey: ["transactions", user?.id, activeProfile?.id, activeProfile?.id] });
+      queryClient.invalidateQueries({ queryKey: ["accounts", user?.id, activeProfile?.id, activeProfile?.id] });
       queryClient.invalidateQueries({
-        queryKey: ["dashboard_stats", user?.id],
+        queryKey: ["dashboard_stats", user?.id, activeProfile?.id, activeProfile?.id],
       });
     },
   });

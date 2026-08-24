@@ -2,6 +2,7 @@
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/lib/supabase";
 import { useAuth } from "@/contexts/AuthContext";
+import { useProfile } from "@/contexts/ProfileContext";
 
 export interface DashboardStats {
   net_worth: number;
@@ -13,6 +14,7 @@ export interface DashboardStats {
 
 export function useDashboardStats(cycleStart: Date, cycleEnd: Date) {
   const { user } = useAuth();
+  const { activeProfile } = useProfile();
 
   return useQuery({
     queryKey: [
@@ -35,7 +37,8 @@ export function useDashboardStats(cycleStart: Date, cycleEnd: Date) {
       const { data: accountsData, error: accountsError } = await supabase
         .from("accounts")
         .select("opening_balance, transactions(amount, type)")
-        .eq("user_id", user.id);
+        .eq("user_id", user.id)
+        .eq("profile_id", activeProfile!.id);
 
       if (accountsError) throw accountsError;
 
@@ -59,6 +62,7 @@ export function useDashboardStats(cycleStart: Date, cycleEnd: Date) {
         .from("transactions")
         .select("amount, type")
         .eq("user_id", user.id)
+        .eq("profile_id", activeProfile!.id)
         .gte("date", startStr)
         .lte("date", endStr)
         .eq("is_adjustment", false)
@@ -80,6 +84,7 @@ export function useDashboardStats(cycleStart: Date, cycleEnd: Date) {
         .from("transactions")
         .select("amount")
         .eq("user_id", user.id)
+        .eq("profile_id", activeProfile!.id)
         .eq("date", todayStr)
         .eq("type", "outflow")
         .eq("is_adjustment", false)
@@ -97,6 +102,7 @@ export function useDashboardStats(cycleStart: Date, cycleEnd: Date) {
         .from("recurring_rules")
         .select("*", { count: "exact", head: true })
         .eq("user_id", user.id)
+        .eq("profile_id", activeProfile!.id)
         .eq("is_active", true)
         .eq("posting_mode", "requires_confirmation")
         .lte("next_due_date", todayStr);
@@ -111,6 +117,6 @@ export function useDashboardStats(cycleStart: Date, cycleEnd: Date) {
         pending_confirmations_count: pendingCount || 0,
       } as DashboardStats;
     },
-    enabled: !!user,
+    enabled: !!user && !!activeProfile,
   });
 }

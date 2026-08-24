@@ -3,11 +3,23 @@
 // Jangan gunakan istilah yg ada di bagian _Avoid_ di CONTEXT.md
 // ============================================================
 
+
+export interface Profile {
+  id: string;
+  user_id: string;
+  profile_id: string;
+  name: string;
+  is_default: boolean;
+  created_at: string;
+  updated_at: string;
+}
+
 export type AccountType = "bank" | "e_wallet" | "cash";
 
 export interface Account {
   id: string;
   user_id: string;
+  profile_id: string;
   name: string;
   type: AccountType;
   opening_balance: number;
@@ -20,6 +32,7 @@ export type TransactionType = "inflow" | "outflow";
 export interface Transaction {
   id: string;
   user_id: string;
+  profile_id: string;
   account_id: string;
   category_id: string;
   amount: number;
@@ -40,6 +53,7 @@ export interface Transaction {
 export interface Category {
   id: string;
   user_id: string;
+  profile_id: string;
   name: string;
   icon?: string;
   color?: string;
@@ -50,6 +64,7 @@ export interface Category {
 export interface Tag {
   id: string;
   user_id: string;
+  profile_id: string;
   name: string;
   created_at: string;
 }
@@ -65,6 +80,7 @@ export type RecurringPostingMode = "auto_post" | "requires_confirmation";
 export interface RecurringRule {
   id: string;
   user_id: string;
+  profile_id: string;
   account_id: string;
   category_id: string;
   amount: number;
@@ -97,6 +113,7 @@ export type BudgetingFramework =
 export interface FinancialCycleConfig {
   id: string;
   user_id: string;
+  profile_id: string;
   start_day: number; // 1–28 (tanggal mulai cycle tiap bulan)
   created_at: string;
   updated_at: string;
@@ -105,6 +122,7 @@ export interface FinancialCycleConfig {
 export interface Budget {
   id: string;
   user_id: string;
+  profile_id: string;
   category_id: string;
   cycle_year: number;
   cycle_month: number;

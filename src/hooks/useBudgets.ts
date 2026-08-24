@@ -2,21 +2,24 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/lib/supabase";
 import { useAuth } from "@/contexts/AuthContext";
+import { useProfile } from "@/contexts/ProfileContext";
 import type { Budget } from "@/types/domain";
 
 export function useBudgets(cycleYear: number, cycleMonth: number) {
   const { user } = useAuth();
+  const { activeProfile } = useProfile();
 
   return useQuery({
-    queryKey: ["budgets", user?.id, cycleYear, cycleMonth],
+    queryKey: ["budgets", user?.id, activeProfile?.id, cycleYear, cycleMonth],
     queryFn: async () => {
-      if (!user) return [];
+      if (!user || !activeProfile) return [];
 
       // Fetch budgets
       const { data: budgets, error: budgetError } = await supabase
         .from("budgets")
         .select("*, category:categories(*)")
         .eq("user_id", user.id)
+        .eq("profile_id", activeProfile!.id)
         .eq("cycle_year", cycleYear)
         .eq("cycle_month", cycleMonth);
 
@@ -26,6 +29,7 @@ export function useBudgets(cycleYear: number, cycleMonth: number) {
         .from("financial_cycle_config")
         .select("start_day")
         .eq("user_id", user.id)
+        .eq("profile_id", activeProfile!.id)
         .single();
       const startDay = config?.start_day || 1;
 
@@ -41,6 +45,7 @@ export function useBudgets(cycleYear: number, cycleMonth: number) {
         .from("transactions")
         .select("category_id, amount")
         .eq("user_id", user.id)
+        .eq("profile_id", activeProfile!.id)
         .eq("type", "outflow")
         .eq("is_adjustment", false)
         .is("transfer_pair_id", null)
@@ -62,22 +67,24 @@ export function useBudgets(cycleYear: number, cycleMonth: number) {
         spent: spentMap[budget.category_id] || 0,
       })) as Budget[];
     },
-    enabled: !!user && !!cycleYear && !!cycleMonth,
+    enabled: !!user && !!activeProfile && !!cycleYear && !!cycleMonth,
   });
 }
 
 export function useUpsertBudget() {
   const queryClient = useQueryClient();
   const { user } = useAuth();
+  const { activeProfile } = useProfile();
 
   return useMutation({
     mutationFn: async (
       budget: Omit<
         Budget,
-        "id" | "user_id" | "created_at" | "updated_at" | "category" | "spent"
+        "id" | "user_id"
+        | "profile_id" | "created_at" | "updated_at" | "category" | "spent"
       >,
     ) => {
-      if (!user) throw new Error("Not authenticated");
+      if (!user || !activeProfile) throw new Error("Not authenticated or no active profile");
       const { data, error } = await supabase
         .from("budgets")
         .upsert(
@@ -107,19 +114,21 @@ export function useUpsertBudget() {
 export function useDeleteBudget() {
   const queryClient = useQueryClient();
   const { user } = useAuth();
+  const { activeProfile } = useProfile();
 
   return useMutation({
     mutationFn: async (id: string) => {
-      if (!user) throw new Error("Not authenticated");
+      if (!user || !activeProfile) throw new Error("Not authenticated or no active profile");
       const { error } = await supabase
         .from("budgets")
         .delete()
         .eq("id", id)
-        .eq("user_id", user.id);
+        .eq("user_id", user.id)
+        .eq("profile_id", activeProfile!.id);
       if (error) throw error;
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["budgets", user?.id] });
+      queryClient.invalidateQueries({ queryKey: ["budgets", user?.id, activeProfile?.id, activeProfile?.id] });
     },
   });
 }

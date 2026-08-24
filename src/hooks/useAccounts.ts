@@ -2,22 +2,25 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/lib/supabase";
 import { useAuth } from "@/contexts/AuthContext";
+import { useProfile } from "@/contexts/ProfileContext";
 import type { Account } from "@/types/domain";
 
 export type AccountWithBalance = Account & { actual_balance: number };
 
 export function useAccounts() {
   const { user } = useAuth();
+  const { activeProfile } = useProfile();
 
   return useQuery({
-    queryKey: ["accounts", user?.id],
+    queryKey: ["accounts", user?.id, activeProfile?.id, activeProfile?.id],
     queryFn: async () => {
-      if (!user) return [];
+      if (!user || !activeProfile) return [];
 
       const { data, error } = await supabase
         .from("accounts")
         .select("*, transactions(amount, type)")
         .eq("user_id", user.id)
+        .eq("profile_id", activeProfile!.id)
         .order("name");
 
       if (error) throw error;
@@ -41,19 +44,21 @@ export function useAccounts() {
         } as AccountWithBalance;
       });
     },
-    enabled: !!user,
+    enabled: !!user && !!activeProfile,
   });
 }
 
 export function useCreateAccount() {
   const queryClient = useQueryClient();
   const { user } = useAuth();
+  const { activeProfile } = useProfile();
 
   return useMutation({
     mutationFn: async (
-      newAccount: Omit<Account, "id" | "user_id" | "created_at" | "updated_at">,
+      newAccount: Omit<Account, "id" | "user_id"
+        | "profile_id" | "created_at" | "updated_at">,
     ) => {
-      if (!user) throw new Error("Not authenticated");
+      if (!user || !activeProfile) throw new Error("Not authenticated or no active profile");
       const { data, error } = await supabase
         .from("accounts")
         .insert([{ ...newAccount, user_id: user.id }])
@@ -63,7 +68,7 @@ export function useCreateAccount() {
       return data;
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["accounts", user?.id] });
+      queryClient.invalidateQueries({ queryKey: ["accounts", user?.id, activeProfile?.id, activeProfile?.id] });
     },
   });
 }
@@ -71,25 +76,27 @@ export function useCreateAccount() {
 export function useUpdateAccount() {
   const queryClient = useQueryClient();
   const { user } = useAuth();
+  const { activeProfile } = useProfile();
 
   return useMutation({
     mutationFn: async ({
       id,
       ...updates
     }: Partial<Account> & { id: string }) => {
-      if (!user) throw new Error("Not authenticated");
+      if (!user || !activeProfile) throw new Error("Not authenticated or no active profile");
       const { data, error } = await supabase
         .from("accounts")
         .update(updates)
         .eq("id", id)
         .eq("user_id", user.id)
+        .eq("profile_id", activeProfile!.id)
         .select()
         .single();
       if (error) throw error;
       return data;
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["accounts", user?.id] });
+      queryClient.invalidateQueries({ queryKey: ["accounts", user?.id, activeProfile?.id, activeProfile?.id] });
     },
   });
 }
@@ -97,19 +104,21 @@ export function useUpdateAccount() {
 export function useDeleteAccount() {
   const queryClient = useQueryClient();
   const { user } = useAuth();
+  const { activeProfile } = useProfile();
 
   return useMutation({
     mutationFn: async (id: string) => {
-      if (!user) throw new Error("Not authenticated");
+      if (!user || !activeProfile) throw new Error("Not authenticated or no active profile");
       const { error } = await supabase
         .from("accounts")
         .delete()
         .eq("id", id)
-        .eq("user_id", user.id);
+        .eq("user_id", user.id)
+        .eq("profile_id", activeProfile!.id);
       if (error) throw error;
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["accounts", user?.id] });
+      queryClient.invalidateQueries({ queryKey: ["accounts", user?.id, activeProfile?.id, activeProfile?.id] });
     },
   });
 }

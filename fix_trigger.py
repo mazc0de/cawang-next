@@ -1,13 +1,10 @@
--- ============================================================
--- CAWANG Seed Data — Default Categories
--- Jalankan setelah schema.sql berhasil dieksekusi
--- Catatan: categories ini bersifat "system default" — setiap user
--- bisa menambah categories sendiri, tapi ini adalah set awal
--- yang dibuat saat user pertama kali mendaftar via trigger atau
--- dijalankan manual di SQL Editor
--- ============================================================
+import re
 
--- Helper function: auto-create default categories untuk user baru
+with open("supabase/seed.sql", "r") as f:
+    content = f.read()
+
+# Replace the create_default_categories_for_user and handle_new_user with a version that uses profile_id
+new_functions = """-- Helper function: auto-create default categories untuk user baru
 create or replace function create_default_categories_for_user(p_user_id uuid, p_profile_id uuid)
 returns void as $$
 begin
@@ -47,32 +44,14 @@ begin
   return new;
 end;
 $$ language plpgsql security definer;
+"""
 
--- Trigger: otomatis buat default categories saat user baru daftar
-create or replace function handle_new_user()
-returns trigger as $$
-begin
-  -- Buat financial cycle config default (mulai tanggal 1)
-  insert into financial_cycle_config (user_id, start_day)
-  values (new.id, 1)
-  on conflict (user_id) do nothing;
+content = re.sub(
+    r'-- Helper function: auto-create default categories untuk user baru.*?language plpgsql security definer;\n',
+    new_functions,
+    content,
+    flags=re.DOTALL
+)
 
-  -- Buat default categories
-  perform create_default_categories_for_user(new.id);
-
-  return new;
-end;
-$$ language plpgsql security definer;
-
--- Drop trigger lama jika ada, lalu buat baru
-drop trigger if exists on_auth_user_created on auth.users;
-create trigger on_auth_user_created
-  after insert on auth.users
-  for each row execute procedure handle_new_user();
-
--- ============================================================
--- Jika ingin test manual (untuk user yang sudah ada):
--- Ganti YOUR_USER_ID dengan user ID dari Supabase Auth dashboard
--- ============================================================
--- select create_default_categories_for_user('YOUR_USER_ID');
--- insert into financial_cycle_config (user_id, start_day) values ('YOUR_USER_ID', 1) on conflict do nothing;
+with open("supabase/seed.sql", "w") as f:
+    f.write(content)
