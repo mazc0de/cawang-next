@@ -33,6 +33,7 @@ import {
   useDeleteBudget,
 } from "@/hooks/useBudgets";
 import { useCategories } from "@/hooks/useCategories";
+import { useAccounts } from "@/hooks/useAccounts";
 import { useFinancialCycleConfig } from "@/hooks/useFinancialCycleConfig";
 import { CategoryIcon } from "@/components/shared/CategoryIcon";
 
@@ -88,6 +89,7 @@ export function BudgetPage() {
 
   // Add/Edit budget dialog state
   const [addCategoryId, setAddCategoryId] = useState("");
+  const [addAccountId, setAddAccountId] = useState("all");
   const [addAmount, setAddAmount] = useState("");
 
   // Wizard state
@@ -116,6 +118,7 @@ export function BudgetPage() {
   const handleOpenAdd = () => {
     setAddCategoryId("");
     setAddAmount("");
+    setAddAccountId("all");
     setEditBudget(null);
     setShowAddDialog(true);
   };
@@ -123,6 +126,7 @@ export function BudgetPage() {
   const handleOpenEdit = (b: any) => {
     setAddCategoryId(b.category_id);
     setAddAmount(String(b.amount));
+    setAddAccountId(b.account_id || "all");
     setEditBudget(b);
     setShowAddDialog(true);
   };
@@ -130,7 +134,9 @@ export function BudgetPage() {
   const handleSaveBudget = async () => {
     if (!addCategoryId || !addAmount || Number(addAmount) <= 0) return;
     await upsertBudget.mutateAsync({
+      ...(editBudget ? { id: editBudget.id } : {}),
       category_id: addCategoryId,
+      account_id: addAccountId === "all" ? null : addAccountId,
       amount: Number(addAmount),
       cycle_year: cycleYear,
       cycle_month: cycleMonth,
@@ -308,8 +314,9 @@ export function BudgetPage() {
                         />
                       </div>
                       <div className="min-w-0">
-                        <h4 className="font-archivo-black text-base text-ink truncate">
+                                                <h4 className="font-archivo-black text-base text-ink truncate flex items-center gap-2">
                           {b.category?.name ?? "—"}
+                          {b.account_id && <span className="text-[10px] bg-canvas px-1.5 py-0.5 rounded-sm border border-ink/20 font-space-grotesk tracking-tight text-ink/70 max-w-[80px] truncate">{b.account?.name}</span>}
                         </h4>
                         <span className="font-space-mono text-xs text-ink/60 font-semibold">
                           {pct}%

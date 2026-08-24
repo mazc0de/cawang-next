@@ -124,6 +124,7 @@ export interface Budget {
   user_id: string;
   profile_id: string;
   category_id: string;
+  account_id?: string | null;
   cycle_year: number;
   cycle_month: number;
   amount: number;
@@ -131,6 +132,7 @@ export interface Budget {
   updated_at: string;
   // Relations
   category?: Category;
+  account?: Account;
   spent?: number; // dihitung dari Transaction
 }
 
