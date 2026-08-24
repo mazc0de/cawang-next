@@ -10,7 +10,7 @@ export function useTags() {
   const { activeProfile } = useProfile();
 
   return useQuery({
-    queryKey: ["tags", user?.id, activeProfile?.id, activeProfile?.id],
+    queryKey: ["tags", user?.id, activeProfile?.id],
     queryFn: async () => {
       if (!user || !activeProfile) return [];
 
@@ -46,7 +46,7 @@ export function useCreateTag() {
       return data;
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["tags", user?.id, activeProfile?.id, activeProfile?.id] });
+      queryClient.invalidateQueries({ queryKey: ["tags", user?.id, activeProfile?.id] });
     },
   });
 }

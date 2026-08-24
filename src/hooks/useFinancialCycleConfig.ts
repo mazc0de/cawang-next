@@ -10,7 +10,7 @@ export function useFinancialCycleConfig() {
   const { activeProfile } = useProfile();
 
   return useQuery({
-    queryKey: ["financial_cycle_config", user?.id, activeProfile?.id, activeProfile?.id],
+    queryKey: ["financial_cycle_config", user?.id, activeProfile?.id],
     queryFn: async () => {
       if (!user || !activeProfile) return null;
 
@@ -38,7 +38,7 @@ export function useUpdateFinancialCycleConfig() {
       if (!user || !activeProfile) throw new Error("Not authenticated or no active profile");
       const { data, error } = await supabase
         .from("financial_cycle_config")
-        .upsert({ user_id: user.id, start_day }, { onConflict: "user_id" })
+        .upsert({ user_id: user.id, profile_id: activeProfile.id, start_day }, { onConflict: "profile_id" })
         .select()
         .single();
       if (error) throw error;
@@ -46,9 +46,9 @@ export function useUpdateFinancialCycleConfig() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({
-        queryKey: ["financial_cycle_config", user?.id, activeProfile?.id, activeProfile?.id],
+        queryKey: ["financial_cycle_config", user?.id, activeProfile?.id],
       });
-      queryClient.invalidateQueries({ queryKey: ["budgets", user?.id, activeProfile?.id, activeProfile?.id] });
+      queryClient.invalidateQueries({ queryKey: ["budgets", user?.id, activeProfile?.id] });
     },
   });
 }

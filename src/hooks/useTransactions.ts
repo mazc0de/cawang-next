@@ -86,10 +86,10 @@ export function useCreateTransaction() {
       return data;
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["transactions", user?.id, activeProfile?.id, activeProfile?.id] });
-      queryClient.invalidateQueries({ queryKey: ["accounts", user?.id, activeProfile?.id, activeProfile?.id] });
+      queryClient.invalidateQueries({ queryKey: ["transactions", user?.id, activeProfile?.id] });
+      queryClient.invalidateQueries({ queryKey: ["accounts", user?.id, activeProfile?.id] });
       queryClient.invalidateQueries({
-        queryKey: ["dashboard_stats", user?.id, activeProfile?.id, activeProfile?.id],
+        queryKey: ["dashboard_stats", user?.id, activeProfile?.id],
       });
     },
   });
@@ -118,10 +118,10 @@ export function useUpdateTransaction() {
       return data;
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["transactions", user?.id, activeProfile?.id, activeProfile?.id] });
-      queryClient.invalidateQueries({ queryKey: ["accounts", user?.id, activeProfile?.id, activeProfile?.id] });
+      queryClient.invalidateQueries({ queryKey: ["transactions", user?.id, activeProfile?.id] });
+      queryClient.invalidateQueries({ queryKey: ["accounts", user?.id, activeProfile?.id] });
       queryClient.invalidateQueries({
-        queryKey: ["dashboard_stats", user?.id, activeProfile?.id, activeProfile?.id],
+        queryKey: ["dashboard_stats", user?.id, activeProfile?.id],
       });
     },
   });
@@ -168,10 +168,10 @@ export function useDeleteTransaction() {
       }
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["transactions", user?.id, activeProfile?.id, activeProfile?.id] });
-      queryClient.invalidateQueries({ queryKey: ["accounts", user?.id, activeProfile?.id, activeProfile?.id] });
+      queryClient.invalidateQueries({ queryKey: ["transactions", user?.id, activeProfile?.id] });
+      queryClient.invalidateQueries({ queryKey: ["accounts", user?.id, activeProfile?.id] });
       queryClient.invalidateQueries({
-        queryKey: ["dashboard_stats", user?.id, activeProfile?.id, activeProfile?.id],
+        queryKey: ["dashboard_stats", user?.id, activeProfile?.id],
       });
     },
   });

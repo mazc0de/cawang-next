@@ -88,9 +88,9 @@ export function useUpsertBudget() {
       const { data, error } = await supabase
         .from("budgets")
         .upsert(
-          { ...budget, user_id: user.id },
+          { ...budget, user_id: user.id, profile_id: activeProfile.id },
           {
-            onConflict: "user_id,category_id,cycle_year,cycle_month",
+            onConflict: "profile_id,category_id,cycle_year,cycle_month",
           },
         )
         .select()
@@ -103,6 +103,7 @@ export function useUpsertBudget() {
         queryKey: [
           "budgets",
           user?.id,
+          activeProfile?.id,
           variables.cycle_year,
           variables.cycle_month,
         ],
@@ -128,7 +129,7 @@ export function useDeleteBudget() {
       if (error) throw error;
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["budgets", user?.id, activeProfile?.id, activeProfile?.id] });
+      queryClient.invalidateQueries({ queryKey: ["budgets", user?.id, activeProfile?.id] });
     },
   });
 }

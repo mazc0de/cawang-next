@@ -10,7 +10,7 @@ export function useRecurringRules() {
   const { activeProfile } = useProfile();
 
   return useQuery({
-    queryKey: ["recurring_rules", user?.id, activeProfile?.id, activeProfile?.id],
+    queryKey: ["recurring_rules", user?.id, activeProfile?.id],
     queryFn: async () => {
       if (!user || !activeProfile) return [];
 
@@ -33,7 +33,7 @@ export function usePendingConfirmations() {
   const { activeProfile } = useProfile();
 
   return useQuery({
-    queryKey: ["pending_confirmations", user?.id, activeProfile?.id, activeProfile?.id],
+    queryKey: ["pending_confirmations", user?.id, activeProfile?.id],
     queryFn: async () => {
       if (!user || !activeProfile) return [];
 
@@ -84,13 +84,13 @@ export function useCreateRecurringRule() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({
-        queryKey: ["recurring_rules", user?.id, activeProfile?.id, activeProfile?.id],
+        queryKey: ["recurring_rules", user?.id, activeProfile?.id],
       });
       queryClient.invalidateQueries({
-        queryKey: ["pending_confirmations", user?.id, activeProfile?.id, activeProfile?.id],
+        queryKey: ["pending_confirmations", user?.id, activeProfile?.id],
       });
       queryClient.invalidateQueries({
-        queryKey: ["dashboard_stats", user?.id, activeProfile?.id, activeProfile?.id],
+        queryKey: ["dashboard_stats", user?.id, activeProfile?.id],
       });
     },
   });
@@ -120,13 +120,13 @@ export function useUpdateRecurringRule() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({
-        queryKey: ["recurring_rules", user?.id, activeProfile?.id, activeProfile?.id],
+        queryKey: ["recurring_rules", user?.id, activeProfile?.id],
       });
       queryClient.invalidateQueries({
-        queryKey: ["pending_confirmations", user?.id, activeProfile?.id, activeProfile?.id],
+        queryKey: ["pending_confirmations", user?.id, activeProfile?.id],
       });
       queryClient.invalidateQueries({
-        queryKey: ["dashboard_stats", user?.id, activeProfile?.id, activeProfile?.id],
+        queryKey: ["dashboard_stats", user?.id, activeProfile?.id],
       });
     },
   });
@@ -159,13 +159,13 @@ export function useToggleRecurringRule() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({
-        queryKey: ["recurring_rules", user?.id, activeProfile?.id, activeProfile?.id],
+        queryKey: ["recurring_rules", user?.id, activeProfile?.id],
       });
       queryClient.invalidateQueries({
-        queryKey: ["pending_confirmations", user?.id, activeProfile?.id, activeProfile?.id],
+        queryKey: ["pending_confirmations", user?.id, activeProfile?.id],
       });
       queryClient.invalidateQueries({
-        queryKey: ["dashboard_stats", user?.id, activeProfile?.id, activeProfile?.id],
+        queryKey: ["dashboard_stats", user?.id, activeProfile?.id],
       });
     },
   });
@@ -189,13 +189,13 @@ export function useDeleteRecurringRule() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({
-        queryKey: ["recurring_rules", user?.id, activeProfile?.id, activeProfile?.id],
+        queryKey: ["recurring_rules", user?.id, activeProfile?.id],
       });
       queryClient.invalidateQueries({
-        queryKey: ["pending_confirmations", user?.id, activeProfile?.id, activeProfile?.id],
+        queryKey: ["pending_confirmations", user?.id, activeProfile?.id],
       });
       queryClient.invalidateQueries({
-        queryKey: ["dashboard_stats", user?.id, activeProfile?.id, activeProfile?.id],
+        queryKey: ["dashboard_stats", user?.id, activeProfile?.id],
       });
     },
   });
@@ -262,15 +262,15 @@ export function useApproveRecurringRule() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({
-        queryKey: ["recurring_rules", user?.id, activeProfile?.id, activeProfile?.id],
+        queryKey: ["recurring_rules", user?.id, activeProfile?.id],
       });
       queryClient.invalidateQueries({
-        queryKey: ["pending_confirmations", user?.id, activeProfile?.id, activeProfile?.id],
+        queryKey: ["pending_confirmations", user?.id, activeProfile?.id],
       });
-      queryClient.invalidateQueries({ queryKey: ["transactions", user?.id, activeProfile?.id, activeProfile?.id] });
-      queryClient.invalidateQueries({ queryKey: ["accounts", user?.id, activeProfile?.id, activeProfile?.id] });
+      queryClient.invalidateQueries({ queryKey: ["transactions", user?.id, activeProfile?.id] });
+      queryClient.invalidateQueries({ queryKey: ["accounts", user?.id, activeProfile?.id] });
       queryClient.invalidateQueries({
-        queryKey: ["dashboard_stats", user?.id, activeProfile?.id, activeProfile?.id],
+        queryKey: ["dashboard_stats", user?.id, activeProfile?.id],
       });
     },
   });

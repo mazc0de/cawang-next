@@ -53,7 +53,7 @@ export function useCreateCategory() {
       return data;
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["categories", user?.id, activeProfile?.id, activeProfile?.id] });
+      queryClient.invalidateQueries({ queryKey: ["categories", user?.id, activeProfile?.id] });
     },
   });
 }
@@ -75,7 +75,7 @@ export function useDeleteCategory() {
       if (error) throw error;
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["categories", user?.id, activeProfile?.id, activeProfile?.id] });
+      queryClient.invalidateQueries({ queryKey: ["categories", user?.id, activeProfile?.id] });
     },
   });
 }
@@ -103,12 +103,12 @@ export function useUpdateCategory() {
       return data;
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["categories", user?.id, activeProfile?.id, activeProfile?.id] });
-      queryClient.invalidateQueries({ queryKey: ["transactions", user?.id, activeProfile?.id, activeProfile?.id] });
+      queryClient.invalidateQueries({ queryKey: ["categories", user?.id, activeProfile?.id] });
+      queryClient.invalidateQueries({ queryKey: ["transactions", user?.id, activeProfile?.id] });
       queryClient.invalidateQueries({
-        queryKey: ["recurring_rules", user?.id, activeProfile?.id, activeProfile?.id],
+        queryKey: ["recurring_rules", user?.id, activeProfile?.id],
       });
-      queryClient.invalidateQueries({ queryKey: ["budgets", user?.id, activeProfile?.id, activeProfile?.id] });
+      queryClient.invalidateQueries({ queryKey: ["budgets", user?.id, activeProfile?.id] });
     },
   });
 }

@@ -12,7 +12,7 @@ export function useAccounts() {
   const { activeProfile } = useProfile();
 
   return useQuery({
-    queryKey: ["accounts", user?.id, activeProfile?.id, activeProfile?.id],
+    queryKey: ["accounts", user?.id, activeProfile?.id],
     queryFn: async () => {
       if (!user || !activeProfile) return [];
 
@@ -68,7 +68,7 @@ export function useCreateAccount() {
       return data;
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["accounts", user?.id, activeProfile?.id, activeProfile?.id] });
+      queryClient.invalidateQueries({ queryKey: ["accounts", user?.id, activeProfile?.id] });
     },
   });
 }
@@ -96,7 +96,7 @@ export function useUpdateAccount() {
       return data;
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["accounts", user?.id, activeProfile?.id, activeProfile?.id] });
+      queryClient.invalidateQueries({ queryKey: ["accounts", user?.id, activeProfile?.id] });
     },
   });
 }
@@ -118,7 +118,7 @@ export function useDeleteAccount() {
       if (error) throw error;
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["accounts", user?.id, activeProfile?.id, activeProfile?.id] });
+      queryClient.invalidateQueries({ queryKey: ["accounts", user?.id, activeProfile?.id] });
     },
   });
 }
