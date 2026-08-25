@@ -134,7 +134,7 @@ export function TopNavbar() {
           )}
 
           <div className="flex flex-col gap-0.5 sm:gap-1">
-            <h2 className="font-archivo-black text-2xl sm:text-3xl lg:text-4xl text-ink leading-none">
+            <h2 className="font-archivo-black font-bold text-2xl sm:text-3xl lg:text-4xl text-ink leading-none">
               {pageTitle}
             </h2>
             {isOverview && (

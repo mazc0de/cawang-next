@@ -603,7 +603,7 @@ export function AnalyticsPage() {
                               <p className="font-space-grotesk font-bold text-sm text-ink truncate">
                                 {b.category}
                               </p>
-                              <p className="font-space-mono text-xs text-ink/60 mt-0.5">
+                              <p className="font-space-mono text-xs text-ink/60 mt-0.5 font-bold">
                                 {formatRupiah(b.actual)} /{" "}
                                 {formatRupiah(b.budget)}
                               </p>

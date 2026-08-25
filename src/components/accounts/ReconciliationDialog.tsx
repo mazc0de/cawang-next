@@ -96,7 +96,7 @@ export function ReconciliationDialog({
                   decimalSeparator=","
                   value={realBalance ? realBalance : ""}
                   onValueChange={(values) =>
-                    setRealBalance(String(values.floatValue || 0))
+                    setRealBalance(values.floatValue !== undefined ? String(values.floatValue) : "")
                   }
                   min={0}
                 />

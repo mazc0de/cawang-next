@@ -92,7 +92,7 @@ export function TransactionFormDialog({
       account_id: "",
       to_account_id: "",
       category_id: "",
-      amount: 0,
+      amount: "" as any,
       date: initialDate,
       notes: "",
       tag_ids: [],
@@ -116,7 +116,7 @@ export function TransactionFormDialog({
     } else if (open) {
       reset({
         type: defaultType,
-        amount: 0,
+        amount: "" as any,
         date: defaultDate || format(new Date(), "yyyy-MM-dd"),
         account_id: "",
         to_account_id: "",
@@ -223,7 +223,7 @@ export function TransactionFormDialog({
                     decimalSeparator=","
                     value={field.value ?? ""}
                     onValueChange={(values) =>
-                      field.onChange(values.floatValue ?? 0)
+                      field.onChange(values.floatValue ?? ("" as any))
                     }
                     onBlur={field.onBlur}
                     min={1}
@@ -339,7 +339,13 @@ export function TransactionFormDialog({
             <Input
               id="input-notes"
               placeholder="Keterangan singkat"
-              {...register("notes")}
+              {...register("notes", {
+                onChange: (e) => {
+                  const val = e.target.value;
+                  const capitalized = val.replace(/(^\s*|[.!?]\s+)([a-z])/g, (m: string, p1: string, p2: string) => p1 + p2.toUpperCase());
+                  setValue("notes", capitalized);
+                }
+              })}
             />
           </FieldWrapper>
 

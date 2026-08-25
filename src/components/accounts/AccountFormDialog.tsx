@@ -58,7 +58,7 @@ export function AccountFormDialog({
     formState: { errors },
   } = useForm<FormValues>({
     resolver: zodResolver(formSchema),
-    defaultValues: { name: "", type: "bank", opening_balance: 0 },
+    defaultValues: { name: "", type: "bank", opening_balance: "" as any },
   });
 
   const typeValue = watch("type");
@@ -72,7 +72,7 @@ export function AccountFormDialog({
               type: account.type,
               opening_balance: account.opening_balance,
             }
-          : { name: "", type: "bank", opening_balance: 0 },
+          : { name: "", type: "bank", opening_balance: "" as any },
       );
     }
   }, [open, account, reset]);
@@ -180,7 +180,7 @@ export function AccountFormDialog({
                       decimalSeparator=","
                       value={field.value ?? ""}
                       onValueChange={(values) =>
-                        field.onChange(values.floatValue ?? 0)
+                        field.onChange(values.floatValue ?? ("" as any))
                       }
                       onBlur={field.onBlur}
                       min={0}

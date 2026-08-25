@@ -487,7 +487,11 @@ export function RecurringPage() {
                 id="rule-description"
                 placeholder="Misal: Gaji Bulanan, Spotify, Cicilan Rumah"
                 value={formDescription}
-                onChange={(e) => setFormDescription(e.target.value)}
+                onChange={(e) => {
+                  const val = e.target.value;
+                  const capitalized = val.replace(/(^\s*|[.!?]\s+)([a-z])/g, (m, p1, p2) => p1 + p2.toUpperCase());
+                  setFormDescription(capitalized);
+                }}
                 className="font-space-grotesk text-sm font-medium"
               />
             </div>

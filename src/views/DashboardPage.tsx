@@ -293,7 +293,7 @@ export function DashboardPage() {
               <div className="p-4 rounded-[14px] bg-canvas border-2 border-ink shadow-hard-sm space-y-3">
                 <div className="flex items-center justify-between text-xs font-space-grotesk font-bold text-ink">
                   <span>Total Terpakai: {formatRupiah(totalSpent)}</span>
-                  <span className="font-space-mono">{budgetProgress}%</span>
+                  <span className="font-space-mono font-bold">{budgetProgress}%</span>
                 </div>
                 <div className="w-full h-4 bg-white border-2 border-ink rounded-full overflow-hidden p-0.5 shadow-[2px_2px_0px_0px_rgba(17,17,17,1)]">
                   <div
@@ -472,7 +472,7 @@ export function DashboardPage() {
                       <p className="font-space-grotesk font-bold text-sm text-ink truncate leading-tight">
                         {tx.notes || cat?.name || "—"}
                       </p>
-                      <p className="font-space-mono text-xs text-ink/60 truncate mt-0.5">
+                      <p className="font-space-mono text-xs text-ink/60 truncate mt-0.5 font-bold">
                         {cat?.name ? `${cat.name} • ` : ""}
                         {acc?.name}
                       </p>
@@ -564,7 +564,7 @@ function StatCard({
         </div>
       </div>
       {sub && (
-        <div className="font-space-mono text-[10px] text-ink/60 font-medium truncate mt-2">
+        <div className="font-space-mono text-[10px] text-ink/60 font-medium truncate mt-2 font-bold">
           {sub}
         </div>
       )}

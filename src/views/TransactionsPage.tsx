@@ -632,7 +632,7 @@ export function TransactionsPage() {
                             </span>
                           )}
                         </div>
-                        <p className="font-space-mono text-xs text-ink/60 font-medium">
+                        <p className="font-space-mono text-xs text-ink/60 font-medium font-bold">
                           {group.transactions.length} transaksi
                         </p>
                       </div>
@@ -715,11 +715,11 @@ export function TransactionsPage() {
                               </p>
                               <div className="flex flex-wrap items-center gap-1.5 mt-1">
                                 {cat?.name && (
-                                  <span className="font-space-mono text-xs text-ink/80 font-semibold">
+                                  <span className="font-space-mono text-xs text-ink/80 font-semibold font-bold">
                                     {cat.name} ·
                                   </span>
                                 )}
-                                <span className="font-space-mono text-xs text-ink/70">
+                                <span className="font-space-mono text-xs text-ink/70 font-bold">
                                   {acc?.name || "Akun"}
                                 </span>
 
@@ -740,7 +740,7 @@ export function TransactionsPage() {
                                     {tags.map((t) => (
                                       <span
                                         key={t.id}
-                                        className="px-1.5 py-0.2 rounded-md bg-lilac/30 border border-ink/40 font-space-mono text-[9px] font-semibold text-ink"
+                                        className="px-1.5 py-0.2 rounded-md bg-lilac/30 border border-ink/40 font-space-mono text-[9px] font-semibold text-ink font-bold"
                                       >
                                         #{t.name}
                                       </span>

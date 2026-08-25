@@ -374,11 +374,11 @@ export function BudgetPage() {
                         />
                       </div>
                       <div className="min-w-0">
-                                                <h4 className="font-archivo-black text-base text-ink truncate flex items-center gap-2">
+                        <h4 className="font-archivo-black font-bold text-base text-ink truncate flex items-center gap-2">
                           {b.category?.name ?? "—"}
                           {b.account_id && <span className="text-[10px] bg-canvas px-1.5 py-0.5 rounded-sm border border-ink/20 font-space-grotesk tracking-tight text-ink/70 max-w-[80px] truncate">{b.account?.name}</span>}
                         </h4>
-                        <span className="font-space-mono text-xs text-ink/60 font-semibold">
+                        <span className="font-space-mono text-xs text-ink/60 font-semibold font-bold">
                           {pct}%
                         </span>
                       </div>
@@ -499,32 +499,33 @@ export function BudgetPage() {
                   </SelectContent>
                 </Select>
               </div>
-              <div className="space-y-2">
-                <Label
-                  htmlFor="budget-account"
-                  className="text-xs font-space-grotesk font-bold uppercase tracking-wider text-ink"
-                >
-                  Akun (Opsional)
-                </Label>
-                <Select value={addAccountId} onValueChange={setAddAccountId}>
-                  <SelectTrigger
-                    id="budget-account"
-                    className="h-10 text-xs font-space-grotesk font-bold"
-                  >
-                    <SelectValue placeholder="Pilih akun" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="all">Semua Akun</SelectItem>
-                    {accounts.map((acc: any) => (
-                      <SelectItem key={acc.id} value={acc.id}>
-                        {acc.name}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
               </>
             )}
+            
+            <div className="space-y-2">
+              <Label
+                htmlFor="budget-account"
+                className="text-xs font-space-grotesk font-bold uppercase tracking-wider text-ink"
+              >
+                Akun (Opsional)
+              </Label>
+              <Select value={addAccountId} onValueChange={setAddAccountId}>
+                <SelectTrigger
+                  id="budget-account"
+                  className="h-10 text-xs font-space-grotesk font-bold"
+                >
+                  <SelectValue placeholder="Pilih akun" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">Semua Akun</SelectItem>
+                  {accounts.map((acc: any) => (
+                    <SelectItem key={acc.id} value={acc.id}>
+                      {acc.name}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
 
             <div className="space-y-1.5">
                             <div className="flex justify-between items-center">
@@ -553,7 +554,7 @@ export function BudgetPage() {
                   decimalSeparator=","
                   value={addAmount ? addAmount : ""}
                   onValueChange={(values) =>
-                    setAddAmount(String(values.floatValue || 0))
+                    setAddAmount(values.floatValue !== undefined ? String(values.floatValue) : "")
                   }
                   min={1}
                 />
