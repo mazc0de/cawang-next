@@ -158,8 +158,6 @@ create table if not exists budgets (
   profile_id uuid not null references profiles(id) on delete cascade,
   category_id uuid not null references categories(id) on delete cascade,
   account_id uuid references accounts(id) on delete cascade,
-  cycle_year smallint not null,
-  cycle_month smallint not null check (cycle_month between 1 and 12),
   amount bigint not null check (amount > 0),
   created_at timestamptz not null default now(),
   updated_at timestamptz not null default now()
@@ -220,5 +218,4 @@ create index if not exists idx_transactions_user_date on transactions(user_id, d
 create index if not exists idx_transactions_account on transactions(account_id);
 create index if not exists idx_transactions_category on transactions(category_id);
 create index if not exists idx_recurring_rules_user_due on recurring_rules(user_id, next_due_date) where is_active = true;
-create index if not exists idx_budgets_user_cycle on budgets(user_id, cycle_year, cycle_month);
-create unique index if not exists budgets_profile_id_category_id_account_id_cycle_year_cycle_month_idx on budgets(profile_id, category_id, cycle_year, cycle_month, coalesce(account_id, '00000000-0000-0000-0000-000000000000'));
+create unique index if not exists budgets_profile_id_category_id_account_id_idx on budgets(profile_id, category_id, coalesce(account_id, '00000000-0000-0000-0000-000000000000'));

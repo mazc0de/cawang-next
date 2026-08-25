@@ -125,8 +125,6 @@ export interface Budget {
   profile_id: string;
   category_id: string;
   account_id?: string | null;
-  cycle_year: number;
-  cycle_month: number;
   amount: number;
   created_at: string;
   updated_at: string;

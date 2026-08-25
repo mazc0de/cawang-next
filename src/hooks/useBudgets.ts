@@ -15,14 +15,12 @@ export function useBudgets(cycleYear: number, cycleMonth: number) {
     queryFn: async () => {
       if (!user || !activeProfile) return [];
 
-      // Fetch budgets
+      // Fetch budgets (no longer filtered by cycle)
       const { data: budgets, error: budgetError } = await supabase
         .from("budgets")
         .select("*, category:categories(*), account:accounts(*)")
         .eq("user_id", user.id)
-        .eq("profile_id", activeProfile!.id)
-        .eq("cycle_year", cycleYear)
-        .eq("cycle_month", cycleMonth);
+        .eq("profile_id", activeProfile!.id);
 
       if (budgetError) throw budgetError;
 
@@ -111,9 +109,7 @@ export function useUpsertBudget() {
         .from("budgets")
         .select("id")
         .eq("profile_id", activeProfile!.id)
-        .eq("category_id", budget.category_id)
-        .eq("cycle_year", budget.cycle_year)
-        .eq("cycle_month", budget.cycle_month);
+        .eq("category_id", budget.category_id);
         
       if (budget.account_id) {
         query = query.eq("account_id", budget.account_id);
@@ -148,15 +144,13 @@ export function useUpsertBudget() {
 
     },
 
-    onSuccess: (_, variables) => {
+    onSuccess: () => {
       toast.success("Budget berhasil disimpan!");
       queryClient.invalidateQueries({
         queryKey: [
           "budgets",
           user?.id,
           activeProfile?.id,
-          variables.cycle_year,
-          variables.cycle_month,
         ],
       });
     },

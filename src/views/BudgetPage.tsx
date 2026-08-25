@@ -145,8 +145,6 @@ export function BudgetPage() {
       category_id: addCategoryId,
       account_id: addAccountId === "all" ? null : addAccountId,
       amount: Number(addAmount),
-      cycle_year: cycleYear,
-      cycle_month: cycleMonth,
     });
     setShowAddDialog(false);
   };
