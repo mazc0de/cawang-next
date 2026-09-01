@@ -1,5 +1,6 @@
 "use client";
 import { useState } from "react";
+import Link from "next/link";
 import {
   Plus,
   Tags,
@@ -7,6 +8,7 @@ import {
   Trash2,
   ArrowDownRight,
   ArrowUpRight,
+  FileText,
 } from "lucide-react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import {
@@ -292,13 +294,14 @@ export function CategoriesPage() {
         </div>
       </div>
 
+
       {/* 2. CATEGORIES TABS & LIST */}
       <Tabs
         value={activeTab}
         onValueChange={(val) => setActiveTab(val as "inflow" | "outflow")}
         className="w-full space-y-6"
       >
-        <div className="flex items-center justify-start">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
           <TabsList id="tab-categories-list">
             <TabsTrigger value="outflow" id="tab-outflow-categories">
               Pengeluaran ({outflowCategories.length})
@@ -307,6 +310,14 @@ export function CategoriesPage() {
               Pemasukan ({inflowCategories.length})
             </TabsTrigger>
           </TabsList>
+
+          <Link
+            href="/dashboard/categories-report"
+            className="btn-neubrutalism bg-canary text-ink px-4 py-2 text-xs font-space-grotesk flex items-center gap-2 self-start sm:self-auto"
+          >
+            <FileText className="h-4 w-4" strokeWidth={2.5} />
+            Lihat Laporan Kategori
+          </Link>
         </div>
 
         <TabsContent value="outflow" className="mt-0">

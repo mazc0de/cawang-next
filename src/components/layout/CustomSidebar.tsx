@@ -1,7 +1,7 @@
 'use client';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { LayoutDashboard, Wallet, ArrowLeftRight, CalendarDays, PieChart, Settings, TrendingUp, Folder, RefreshCw, PiggyBank, X } from 'lucide-react';
+import { LayoutDashboard, Wallet, ArrowLeftRight, CalendarDays, PieChart, Settings, TrendingUp, Folder, RefreshCw, PiggyBank, X, FileText } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useSidebarContext } from '@/contexts/SidebarContext';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
@@ -19,6 +19,7 @@ const mainNavItems = [
     { href: '/dashboard/calendar', label: 'Calendar', icon: CalendarDays },
     { href: '/dashboard/recurring', label: 'Recurring', icon: RefreshCw },
     { href: '/dashboard/categories', label: 'Categories', icon: Folder },
+    { href: '/dashboard/categories-report', label: 'Category Report', icon: FileText },
 ];
 
 const secondaryNavItems = [{ href: '/dashboard/settings', label: 'Settings', icon: Settings }];
