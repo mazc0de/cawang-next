@@ -1,5 +1,6 @@
 "use client";
 import { useAuth } from "@/contexts/AuthContext";
+import { useProfile } from "@/contexts/ProfileContext";
 import { useQueryClient } from "@tanstack/react-query";
 import { format } from "date-fns";
 import { supabase } from "@/lib/supabase";
@@ -17,6 +18,7 @@ import { useTransactionsContext } from "@/contexts/TransactionsContext";
 
 export function GlobalTransactionDialog() {
   const { user } = useAuth();
+  const { activeProfile } = useProfile();
   const queryClient = useQueryClient();
   const txContext = useTransactionsContext();
   const { data: accounts = [] } = useAccounts();
@@ -48,6 +50,9 @@ export function GlobalTransactionDialog() {
         });
         queryClient.invalidateQueries({ queryKey: ["transactions", user.id] });
         queryClient.invalidateQueries({ queryKey: ["accounts", user.id] });
+        queryClient.invalidateQueries({ queryKey: ["dashboard_stats", user.id] });
+        queryClient.invalidateQueries({ queryKey: ["budgets", user.id] });
+        queryClient.invalidateQueries({ queryKey: ["analytics_data", user.id] });
       } else {
         await updateTransaction.mutateAsync({
           id: editingTransaction.id,
@@ -68,6 +73,7 @@ export function GlobalTransactionDialog() {
         .insert([
           {
             user_id: user.id,
+            profile_id: activeProfile?.id,
             account_id: data.account_id,
             category_id:
               categories.find((c) => c.type === "outflow")?.id ?? "",
@@ -90,6 +96,7 @@ export function GlobalTransactionDialog() {
         .insert([
           {
             user_id: user.id,
+            profile_id: activeProfile?.id,
             account_id: data.to_account_id!,
             category_id:
               categories.find((c) => c.type === "inflow")?.id ?? "",
@@ -115,6 +122,9 @@ export function GlobalTransactionDialog() {
 
       queryClient.invalidateQueries({ queryKey: ["transactions", user.id] });
       queryClient.invalidateQueries({ queryKey: ["accounts", user.id] });
+      queryClient.invalidateQueries({ queryKey: ["dashboard_stats", user.id] });
+      queryClient.invalidateQueries({ queryKey: ["budgets", user.id] });
+      queryClient.invalidateQueries({ queryKey: ["analytics_data", user.id] });
     } else {
       await createTransaction.mutateAsync({
         account_id: data.account_id,

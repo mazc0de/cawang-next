@@ -77,6 +77,9 @@ export function useCreateAccount() {
     onSuccess: () => {
       toast.success("Akun berhasil dibuat!");
       queryClient.invalidateQueries({ queryKey: ["accounts", user?.id, activeProfile?.id] });
+      queryClient.invalidateQueries({ queryKey: ["dashboard_stats", user?.id, activeProfile?.id] });
+      queryClient.invalidateQueries({ queryKey: ["budgets", user?.id, activeProfile?.id] });
+      queryClient.invalidateQueries({ queryKey: ["analytics_data", user?.id, activeProfile?.id] });
     },
   });
 }
@@ -112,6 +115,9 @@ export function useUpdateAccount() {
     onSuccess: () => {
       toast.success("Akun berhasil diperbarui!");
       queryClient.invalidateQueries({ queryKey: ["accounts", user?.id, activeProfile?.id] });
+      queryClient.invalidateQueries({ queryKey: ["dashboard_stats", user?.id, activeProfile?.id] });
+      queryClient.invalidateQueries({ queryKey: ["budgets", user?.id, activeProfile?.id] });
+      queryClient.invalidateQueries({ queryKey: ["analytics_data", user?.id, activeProfile?.id] });
     },
   });
 }
@@ -141,6 +147,9 @@ export function useDeleteAccount() {
     onSuccess: () => {
       toast.success("Akun berhasil dihapus!");
       queryClient.invalidateQueries({ queryKey: ["accounts", user?.id, activeProfile?.id] });
+      queryClient.invalidateQueries({ queryKey: ["dashboard_stats", user?.id, activeProfile?.id] });
+      queryClient.invalidateQueries({ queryKey: ["budgets", user?.id, activeProfile?.id] });
+      queryClient.invalidateQueries({ queryKey: ["analytics_data", user?.id, activeProfile?.id] });
     },
   });
 }

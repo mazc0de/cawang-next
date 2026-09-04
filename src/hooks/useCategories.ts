@@ -91,6 +91,10 @@ export function useDeleteCategory() {
     onSuccess: () => {
       toast.success("Kategori berhasil dihapus!");
       queryClient.invalidateQueries({ queryKey: ["categories", user?.id, activeProfile?.id] });
+      queryClient.invalidateQueries({ queryKey: ["transactions", user?.id, activeProfile?.id] });
+      queryClient.invalidateQueries({ queryKey: ["budgets", user?.id, activeProfile?.id] });
+      queryClient.invalidateQueries({ queryKey: ["recurring_rules", user?.id, activeProfile?.id] });
+      queryClient.invalidateQueries({ queryKey: ["analytics_data", user?.id, activeProfile?.id] });
     },
   });
 }
@@ -131,6 +135,7 @@ export function useUpdateCategory() {
         queryKey: ["recurring_rules", user?.id, activeProfile?.id],
       });
       queryClient.invalidateQueries({ queryKey: ["budgets", user?.id, activeProfile?.id] });
+      queryClient.invalidateQueries({ queryKey: ["analytics_data", user?.id, activeProfile?.id] });
     },
   });
 }

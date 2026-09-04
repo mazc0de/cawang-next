@@ -306,6 +306,12 @@ export function useApproveRecurringRule() {
       queryClient.invalidateQueries({
         queryKey: ["dashboard_stats", user?.id, activeProfile?.id],
       });
+      queryClient.invalidateQueries({
+        queryKey: ["budgets", user?.id, activeProfile?.id],
+      });
+      queryClient.invalidateQueries({
+        queryKey: ["analytics_data", user?.id, activeProfile?.id],
+      });
     },
   });
 }

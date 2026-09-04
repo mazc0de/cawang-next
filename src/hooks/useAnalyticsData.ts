@@ -48,6 +48,7 @@ export function useAnalyticsData(cycleStart: Date, cycleEnd: Date) {
     queryKey: [
       "analytics_data",
       user?.id,
+      activeProfile?.id,
       cycleStart.toISOString(),
       cycleEnd.toISOString(),
     ],

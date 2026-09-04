@@ -20,6 +20,7 @@ export function useDashboardStats(cycleStart: Date, cycleEnd: Date) {
     queryKey: [
       "dashboard_stats",
       user?.id,
+      activeProfile?.id,
       cycleStart.toISOString(),
       cycleEnd.toISOString(),
     ],

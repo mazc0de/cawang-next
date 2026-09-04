@@ -99,6 +99,12 @@ export function useCreateTransaction() {
       queryClient.invalidateQueries({
         queryKey: ["dashboard_stats", user?.id, activeProfile?.id],
       });
+      queryClient.invalidateQueries({
+        queryKey: ["budgets", user?.id, activeProfile?.id],
+      });
+      queryClient.invalidateQueries({
+        queryKey: ["analytics_data", user?.id, activeProfile?.id],
+      });
     },
   });
 }
@@ -137,6 +143,12 @@ export function useUpdateTransaction() {
       queryClient.invalidateQueries({ queryKey: ["accounts", user?.id, activeProfile?.id] });
       queryClient.invalidateQueries({
         queryKey: ["dashboard_stats", user?.id, activeProfile?.id],
+      });
+      queryClient.invalidateQueries({
+        queryKey: ["budgets", user?.id, activeProfile?.id],
+      });
+      queryClient.invalidateQueries({
+        queryKey: ["analytics_data", user?.id, activeProfile?.id],
       });
     },
   });
@@ -194,6 +206,12 @@ export function useDeleteTransaction() {
       queryClient.invalidateQueries({ queryKey: ["accounts", user?.id, activeProfile?.id] });
       queryClient.invalidateQueries({
         queryKey: ["dashboard_stats", user?.id, activeProfile?.id],
+      });
+      queryClient.invalidateQueries({
+        queryKey: ["budgets", user?.id, activeProfile?.id],
+      });
+      queryClient.invalidateQueries({
+        queryKey: ["analytics_data", user?.id, activeProfile?.id],
       });
     },
   });

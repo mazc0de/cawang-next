@@ -63,6 +63,7 @@ export function BottomNavbar() {
               <Link
                 key={item.href}
                 href={item.href}
+                prefetch={false}
                 className={cn(
                   "flex flex-col items-center justify-center min-w-[54px] py-1.5 px-2 rounded-xl transition-all font-space-grotesk",
                   isActive
@@ -111,6 +112,7 @@ export function BottomNavbar() {
               <Link
                 key={item.href}
                 href={item.href}
+                prefetch={false}
                 className={cn(
                   "flex flex-col items-center justify-center min-w-[54px] py-1.5 px-2 rounded-xl transition-all font-space-grotesk",
                   isActive

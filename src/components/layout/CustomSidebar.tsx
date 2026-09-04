@@ -61,6 +61,7 @@ export function CustomSidebar() {
                                 <TooltipTrigger asChild>
                                     <Link
                                         href={item.href}
+                                        prefetch={false}
                                         className={cn(
                                             'flex items-center h-11 rounded-xl border-2 transition-[width,background-color,border-color,box-shadow] duration-300 ease-in-out group px-3 overflow-hidden',
                                             isCollapsed ? 'w-11' : 'w-[210px]',
@@ -100,6 +101,7 @@ export function CustomSidebar() {
                                 <TooltipTrigger asChild>
                                     <Link
                                         href={item.href}
+                                        prefetch={false}
                                         className={cn(
                                             'flex items-center h-11 rounded-xl border-2 transition-[width,background-color,border-color,box-shadow] duration-300 ease-in-out group px-3 overflow-hidden',
                                             isCollapsed ? 'w-11' : 'w-[210px]',
@@ -141,7 +143,7 @@ export function CustomSidebar() {
             >
                 {/* Header with Logo & Close Button */}
                 <div className="flex items-center justify-between border-b-2 border-ink h-[76px] px-4 shrink-0 bg-canvas/50">
-                    <Link href="/dashboard" onClick={closeMobileSidebar} className="flex items-center gap-3 group" title="CAWANG">
+                    <Link href="/dashboard" prefetch={false} onClick={closeMobileSidebar} className="flex items-center gap-3 group" title="CAWANG">
                         <div className="w-10 h-10 rounded-[12px] bg-hot-pink border-2 border-ink shadow-[2px_2px_0px_0px_#111111] flex items-center justify-center shrink-0">
                             <PiggyBank className="text-ink h-5 w-5" strokeWidth={2.5} />
                         </div>
@@ -171,6 +173,7 @@ export function CustomSidebar() {
                             <Link
                                 key={item.href}
                                 href={item.href}
+                                prefetch={false}
                                 onClick={closeMobileSidebar}
                                 className={cn(
                                     'flex items-center h-12 rounded-xl border-2 px-3.5 transition-all group font-space-grotesk',
@@ -196,6 +199,7 @@ export function CustomSidebar() {
                             <Link
                                 key={item.href}
                                 href={item.href}
+                                prefetch={false}
                                 onClick={closeMobileSidebar}
                                 className={cn(
                                     'flex items-center h-12 rounded-xl border-2 px-3.5 transition-all group font-space-grotesk',

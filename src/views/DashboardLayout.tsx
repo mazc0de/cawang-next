@@ -1,4 +1,7 @@
 "use client";
+import { useEffect, useRef } from "react";
+import { usePathname } from "next/navigation";
+import { useQueryClient } from "@tanstack/react-query";
 import { Navigate } from "@/components/Navigate";
 import { useAuth } from "@/contexts/AuthContext";
 import { Loader2 } from "lucide-react";
@@ -17,6 +20,17 @@ import { SidebarProvider } from "@/contexts/SidebarContext";
 
 export function DashboardLayout({ children }: { children: React.ReactNode }) {
   const { user, loading } = useAuth();
+  const pathname = usePathname();
+  const queryClient = useQueryClient();
+  const isFirstRender = useRef(true);
+
+  useEffect(() => {
+    if (isFirstRender.current) {
+      isFirstRender.current = false;
+      return;
+    }
+    queryClient.invalidateQueries();
+  }, [pathname, queryClient]);
 
   if (loading) {
     return (
